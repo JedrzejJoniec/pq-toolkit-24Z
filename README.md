@@ -1,97 +1,113 @@
-# Perceptual Qualities Python Toolkit
+# WIMU 24Z
 
-Toolkit for preparing and conducting experiments that asses
-perceptual qualities of audio.
+# Features
 
-## Project for course WIMU 23Z
+* CI/CD
+* Data analysis tab
+* Sample playback
+* Downloadable test result reports
+* Automatic mkdocs deployment
 
-Project members:
-- Bartłomiej Piktel
-- Paweł Müller
-- Grzegorz Rusinek
+# Technology Stack
 
-### Contributions
- - ZPRP 24L course members:
-   - Igor Matynia
-   - Jakub Woźniak
-   - Jan Kowalczewski
- - WIMU 24L course members:
-   - Mikołaj Olczak
-   - Kondracki Wojciech
-   - Krzysztof Miśków
+### Python interface
 
-## Project structure
+* Python
+* MkDocs
 
-- docs - project documentation
-- src - source files organised by modules
-    - pq-toolkit - Python toolkit interface
-    - pq-toolkit-ui - frontend for conducting experiments
-    - pq-toolkit-api - backend service with api
-    - deployments - docker compose and env files
+### Frontend experiment application
 
-## Usage
+* Typescript
+* npm
+* React.js
+* Next.js
 
-This project consists of test creation Python plugin and web application
-testing platform.
+### Backend
 
-### How to use Python plugin
+* Flask (back-end) (possible continuation in NextJS)
 
-Installation details are available in [pq-toolkit README](src/pq-toolkit/README.md), as well as in the [docs](docs/README.md).
+### Database
 
-The Python plugin can be used to interact with the PQ Toolkit API backend the same way as the web application and can also be used to read test results.
+* PostgreSQL
 
-### How to start web application
+### CI/CD
 
-1. Deployment:
-   - Go to `src/deployments`
-   - Fill in required configuration in `.env.*` files according to your specification
-   - Go to `src/`
-   - Build docker image by running `make build-[flavor]`
-   - Deploy docker image by running `make start-[flavor]`
-   - (To stop an image use `make stop-[flavor]`)
-2. Uploading experiments
-   - Using Python script
-   - Using admin panel available at `/admin`
-3. For users `/[experiment-name]`
-4. Getting results using Python script
+* GitLab (?)
+* Jenkins (?)
+* ...
 
-Available flavors:
-- prod
-- stage
-- dev
+### Additions
 
-### How to create revisions
+* Prettier
+* Jest
+* flake8
+* venv
+* make
+* mkdocs
 
-1. Make sure you have `.env.prod` file in `src/deployments` directory
-2. Go to `src/`
-3. Run `make alembic-shell`
-4. Execute alembic commands in the shell
-5. Exit the shell
-6. Run `make alembic-stop`
+# Testing
 
-All the revisions are automatically applied at startup.
+* Unit tests
 
-## 2024L notes
+# Roadmap
 
-Initially, the project was planned for 3 people, but at the beginning we received information that it would be for 6 people, 3 people each from two different fields and subjects. This caused a slight disruption in the plans, but in order to control the situation as quickly as possible and minimize the number of problems, we decided to divide the work between backend - ZPRP group and fronted WIMU group. This allowed us to complete the project efficiently despite the large number of people involved.
+* ## Week 1: 21/10/2024 - 27/10/2024
 
-Potential improvements:
- - additional functionality for the admin allowing for easy analysis of test results
- - CI/CD implementation
- - more options for test configurations (new tests or more helper components)
- - automatic mkdocs deployment
- - implementation of sample playback functionality in the experiment configurator
+  * **Project Introduction:** literature review, analysis of the existing code and project architecture
 
- The project progressed on schedule with minor delays while connecting the backend to the frontend. However, in the end, the project was completed only with a delay of a few days. Which is still before the deadline
+* ## Week 2: 28/10/2024 - 3/11/2024
+  
+  * Preparation of the project structure for CI/CD implementation
+  
+* ## Week 3: 4/11/2024 - 10/11/2024
 
+  * CI/CD implementation in the project
 
-## WIMU-24L notes
+* ## Week 4: 11/11/2024 - 17/11/2024
 
-Known issues:
-- Error handling
-- Loading screen improvement (darkmode)
+  * Initialization of the project extension with a test results analysis tool (tab)
 
-## ZPRP-24L notes
+* ## Week 5: 18/11/2024 - 24/11/2024
 
-Known issues:
-- Feedback is not included in test results
+  * Implementation of the analysis tool
+
+* ## Week 6: 25/11/2024 - 01/12/2024
+
+  * Introduction of functionality for sample playback in the tool
+
+* ## Week 7: 02/12/2024 - 08/12/2024
+
+  * Preparation of the project for the implementation of automated mkdocs
+
+* ## Week 8: 09/12/2024 - 15/12/2024
+
+  * Implementation of mkdocs
+
+* ## Week 9: 16/12/2024 - 01/01/2025
+
+  * Analysis of data access layer requirements for creating a test reporting mechanism/tool
+  * Christmas break
+
+* ## Week 10: 02/01/2025 - 06/01/2025
+
+  * Implementation of the data access mechanism for test data from the database
+
+* ## Week 11: 7/01/2025 - 12/01/2025
+
+  * Implementation of the report generation tool
+
+* ## Week 12: 13/01/2025 - 23/01/2025
+
+  * Project review and optimization
+  * Finalization of the project's technical documentation
+
+# References
+
+[1] Method for the subjective assessment of intermediate quality level of coding systems. Recommendation ITU-R BS.1534-1, 2003. [[pdf]](https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1534-1-200301-S!!PDF-E.pdf)
+
+[2] B. De Man and J. Reiss, ‘APE: Audio Perceptual Evaluation toolbox for MATLAB’, 04 2014.
+[[pdf]](https://www.researchgate.net/publication/273574027_APE_Audio_Perceptual_Evaluation_toolbox_for_MATLAB)
+
+[3] N. Jillings, D. Moffat, B. De Man, and J. D. Reiss, “Web Audio Evaluation Tool: A browser-based listening test environment,” Jul. 2015. [[pdf]](https://www.researchgate.net/publication/282328219_Web_Audio_Evaluation_Tool_A_Browser-Based_Listening_Test_Environment) [[GitHub]](https://github.com/BrechtDeMan/WebAudioEvaluationTool)
+
+[4] A. Vinay and A. Lerch, “Evaluating generative audio systems and their metrics”, 2022. [[pdf]](https://arxiv.org/pdf/2209.00130.pdf)
