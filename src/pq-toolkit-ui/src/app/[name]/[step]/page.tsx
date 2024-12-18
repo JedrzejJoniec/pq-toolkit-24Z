@@ -26,8 +26,6 @@ import {
 import Header from '@/lib/components/basic/header'
 import Blobs from '../../../lib/components/basic/blobs'
 
-export const revalidate = 0
-
 const TestPage = ({
   params
 }: {

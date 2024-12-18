@@ -18,6 +18,7 @@ import { FaExpand, FaMinus, FaPlus } from 'react-icons/fa'
 import CreateExperimentForm from '@/lib/components/form/createExperimentForm'
 import DeleteButton from '@/lib/components/basic/deleteButton'
 import { TbLogout2 } from 'react-icons/tb'
+
 const AdminPage = ({
   refreshAdminPage
 }: {
@@ -70,6 +71,24 @@ const AdminPage = ({
         >
           <TbLogout2 className="mr-2" />
           Logout
+        </button>
+      <div className="flex justify-end fadeInUp mr-4 md:mr-10 z-50"></div>
+        <button 
+        className="flex items-center font-semibold max-md:text-sm max-md:px-2 max-md:py-1 bg-blue-400 dark:bg-blue-500 hover:bg-pink-500 dark:hover:bg-pink-600 text-white px-4 py-2 rounded-full shadow-lg transform transition-transform duration-300 ease-in-out hover:scale-105"
+        onClick={() => {
+          window.location.href = '/admin/review';
+        }}
+        >
+          Experiment Review
+        </button>
+      <div className="flex justify-end fadeInUp mr-4 md:mr-10 z-50"></div>
+        <button 
+        className="flex items-center font-semibold max-md:text-sm max-md:px-2 max-md:py-1 bg-blue-400 dark:bg-blue-500 hover:bg-pink-500 dark:hover:bg-pink-600 text-white px-4 py-2 rounded-full shadow-lg transform transition-transform duration-300 ease-in-out hover:scale-105"
+        onClick={() => {
+          window.location.href = '/admin/management';
+        }}
+        >
+          Experiment Management
         </button>
       </div>
       <div className="flex flex-col h-full w-full items-center justify-center my-auto mt-32">
