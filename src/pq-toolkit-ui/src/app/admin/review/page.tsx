@@ -54,29 +54,6 @@ const AdminPage = ({
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-stone-900">
       <Header />
-      <div className="flex justify-end fadeInUp mr-4 md:mr-10 z-50 space-x-4">
-        {/* Logout Button */}
-        <button
-          className="flex items-center font-semibold max-md:text-sm max-md:px-2 max-md:py-1 bg-blue-400 dark:bg-blue-500 hover:bg-pink-500 dark:hover:bg-pink-600 text-white px-4 py-2 rounded-full shadow-lg transform transition-transform duration-300 ease-in-out hover:scale-105"
-          onClick={() => {
-            localStorage.removeItem('token')
-            refreshAdminPage().catch((error) => {
-              console.error(error)
-            })
-          }}
-        >
-          <TbLogout2 className="mr-2" />
-          Logout
-        </button>
-
-        {/* Back Button */}
-        <button
-          onClick={() => window.history.back()}
-          className="flex items-center font-semibold max-md:text-sm max-md:px-2 max-md:py-1 bg-blue-400 dark:bg-blue-500 hover:bg-pink-500 dark:hover:bg-pink-600 text-white px-4 py-2 rounded-full shadow-lg transform transition-transform duration-300 ease-in-out hover:scale-105"
-        >
-          Back
-        </button>
-      </div>
       <div className="flex flex-col h-full w-full items-center justify-center my-auto mt-32">
         <div className="relative text-center mb-sm md:mb-md lg:mb-lg">
           <Blobs />
