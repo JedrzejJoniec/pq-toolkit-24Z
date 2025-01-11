@@ -1,5 +1,5 @@
-from fastapi import APIRouter, UploadFile, Request
-
+from fastapi import APIRouter, UploadFile, Request, Response
+from fastapi.responses import JSONResponse
 from app.api.deps import SessionDep, SampleManagerDep, CurrentAdmin
 from app.schemas import (
     PqExperimentsList,
@@ -16,6 +16,7 @@ router = APIRouter()
 @router.get("/", response_model=PqExperimentsList)
 def get_experiments(session: SessionDep):
     return crud.get_experiments(session)
+
 
 
 @router.post("/", response_model=PqExperimentsList)
@@ -68,6 +69,18 @@ async def get_sample(
     sample_manager: SampleManagerDep, experiment_name: str, filename: str
 ):
     return crud.get_experiment_sample(sample_manager, experiment_name, filename)
+
+@router.get("/{experiment_name}/results_csv", response_class=Response)
+def download_results_csv(session: SessionDep, experiment_name: str):
+    results = crud.get_experiment_tests_results(session, experiment_name)
+    
+    # Convert results to CSV format
+    csv_content = "Test Name,Result,Comments\n"
+    csv_content += "\n".join(f"{r[0]},{r[1]}" for r in results)
+    for r in results:
+        print(r[1][0])
+
+    return
 
 
 @router.delete(

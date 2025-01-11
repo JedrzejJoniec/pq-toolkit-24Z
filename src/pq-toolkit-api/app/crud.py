@@ -216,14 +216,17 @@ def add_test_results(
 def transform_test_result(
     result: ExperimentTestResult, test_type: PqTestTypes
 ) -> PqTestABResult | PqTestABXResult | PqTestMUSHRAResult | PqTestAPEResult:
+    data = result.test_result.copy()
+    data["experimentUse"] = result.experiment_use
+
     if test_type == PqTestTypes.AB:
-        return PqTestABResult(**result.test_result)
+        return PqTestABResult(**data)
     elif test_type == PqTestTypes.ABX:
-        return PqTestABXResult(**result.test_result)
+        return PqTestABXResult(**data)
     elif test_type == PqTestTypes.MUSHRA:
-        return PqTestMUSHRAResult(**result.test_result)
+        return PqTestMUSHRAResult(**data)
     elif test_type == PqTestTypes.APE:
-        return PqTestAPEResult(**result.test_result)
+        return PqTestAPEResult(**data)
 
 
 def verify_test_result(result: dict, test_type: PqTestTypes):
@@ -247,6 +250,7 @@ def get_experiment_tests_results(
     results = []
     for test in experiment.tests:
         for result in test.experiment_test_results:
+            print(f"experiment_use: {result.experiment_use}")
             if result_name is None or result.experiment_use == result_name:
                 results.append(transform_test_result(result, test.type))
     return PqTestResultsList(results=results)

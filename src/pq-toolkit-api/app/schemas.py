@@ -181,7 +181,7 @@ class PqTestMUSHRAResult(PqTestBaseResult):
     reference_score: int = Field(alias="referenceScore")
     anchors_scores: list[PqTestMUSHRAScore] = Field(alias="anchorsScores")
     samples_scores: list[PqTestMUSHRAScore] = Field(alias="samplesScores")
-
+    experiment_use: str = Field(alias="experimentUse")
 
 class PqTestAPESampleRating(BaseModel):
     sample_id: str = Field(alias="sampleId")
@@ -211,12 +211,14 @@ class PqExperiment(BaseModel):
         uid: A unique ID of the experiment.
         name: Experiment name.
         description: Experiment description.
+        experiment_use: The usage type of the experiment, either 'research' or 'production'.
         tests: A list of test objects
     """
 
     uid: UUID4 | str = uuid.uuid4()
     name: str
     description: str
+    experiment_use: str = Field(alias="experimentUse", default=None)
     end_text: str | None = Field(alias="endText", default=None)
     tests: list[PqTestMUSHRA | PqTestAPE | PqTestABX | PqTestAB]
 
