@@ -131,3 +131,34 @@ export const getSampleSchema = z.string()
  * Type from {@link getSampleSchema}
  */
 export type getSampleData = z.infer<typeof getSampleSchema>
+
+/**
+ * Schema for a single sample
+ * Defines the structure for a sample
+ */
+export const SampleSchema = z.object({
+  sampleId: z.string(),
+  name: z.string(),
+  assetPath: z.string(),
+  rating: z.number()
+});
+
+/**
+ * Type from {@link SampleSchema}
+ * Represents a single sample
+ */
+export type SampleData = z.infer<typeof SampleSchema>;
+
+/**
+ * Schema for a list of samples
+ * Defines an array of samples
+ */
+export const SamplesListSchema = z.object({
+  samples: z.array(SampleSchema)
+});
+
+/**
+ * Type from {@link SamplesListSchema}
+ * Represents a list of samples
+ */
+export type SamplesListData = z.infer<typeof SamplesListSchema>;

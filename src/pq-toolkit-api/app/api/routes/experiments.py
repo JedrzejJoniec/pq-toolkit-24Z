@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, Request, Response
+from fastapi import APIRouter, UploadFile, Request, Response, Form
 from fastapi.responses import JSONResponse
 from app.api.deps import SessionDep, SampleManagerDep, CurrentAdmin
 from app.schemas import (
@@ -7,8 +7,10 @@ from app.schemas import (
     PqSuccessResponse,
     PqExperiment,
     PqTestResultsList,
+PqSamplePaths,
 )
 import app.crud as crud
+from typing import List, Optional
 
 router = APIRouter()
 
@@ -64,6 +66,29 @@ def upload_sample(
     return PqSuccessResponse(success=True)
 
 
+@router.post("/{experiment_name}/samples/v2", response_model=PqSamplePaths)
+def upload_sample_v2(
+    session: SessionDep,
+    sample_manager: SampleManagerDep,
+    experiment_name: str,
+    files: List[UploadFile] = Form(default_factory=list),
+    titles: List[str] = Form(default_factory=list),
+    sample_ids: List[int] = Form(default_factory=list)
+):
+
+    samples_paths = []
+
+    if files and titles:
+        for file, title in zip(files, titles):
+            upload_path = crud.upload_experiment_sample(sample_manager, experiment_name, file)
+            samples_paths.append(crud.create_sample(session, upload_path, title))
+
+    if sample_ids:
+        for sample_id in sample_ids:
+            samples_paths.append(crud.assign_sample_to_experiment(session, sample_manager, experiment_name, sample_id))
+
+    return PqSamplePaths(asset_path=samples_paths)
+
 @router.get("/{experiment_name}/samples/{filename}", response_model=UploadFile)
 async def get_sample(
     sample_manager: SampleManagerDep, experiment_name: str, filename: str
@@ -73,7 +98,7 @@ async def get_sample(
 @router.get("/{experiment_name}/results_csv", response_class=Response)
 def download_results_csv(session: SessionDep, experiment_name: str):
     results = crud.get_experiment_tests_results(session, experiment_name)
-    
+
     # Convert results to CSV format
     csv_content = "Test Name,Result,Comments\n"
     csv_content += "\n".join(f"{r[0]},{r[1]}" for r in results)
