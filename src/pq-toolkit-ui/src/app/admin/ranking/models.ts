@@ -3,8 +3,9 @@ import { z } from 'zod'
 export const samplesListSchema = z.object({
     samples: z.array(
         z.object({
+          sampleId: z.string(),
           name: z.string(), 
-          url: z.string().url(),
+          assetPath: z.string(),
           rating: z.number(),
     })
     ),

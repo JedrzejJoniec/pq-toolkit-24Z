@@ -24,7 +24,7 @@ const AbEditor = ({
       ABTest | ABXTest | FullABXTest | MUSHRATest | APETest | BaseTest
     >
   >
-  fileList: File[]
+  fileList: string[]
   setSetup: React.Dispatch<React.SetStateAction<ExperimentSetup>>
 }): JSX.Element => {
   const [newQuestion, setNewQuestion] = useState<string>('')
@@ -39,33 +39,33 @@ const AbEditor = ({
               No Samples available. Please upload some.
             </h3>
           ) : (
-            fileList.map((file) => {
+            fileList.map((assetPath) => {
               const isChecked =
-                sampleTest.filter((sample) => sample.assetPath === file.name)
+                sampleTest.filter((sample) => sample.assetPath === assetPath)
                   .length > 0
               const isDisabled = !isChecked && sampleTest.length >= 2
               return (
                 <label
-                  key={file.name}
+                  key={assetPath}
                   className="flex items-center relative cursor-pointer mr-2 break-words w-full"
                 >
                   <input
                     type="checkbox"
-                    id={file.name}
+                    id={assetPath}
                     checked={isChecked}
-                    name={file.name}
+                    name={assetPath}
                     disabled={isDisabled}
                     onChange={(e) => {
                       if (e.target.checked) {
                         if (sampleTest.length < 2) {
                           setSampleTest((oldarray) => [
                             ...oldarray,
-                            { sampleId: 's0', assetPath: file.name }
+                            { sampleId: assetPath, assetPath: assetPath }
                           ])
                         }
                       } else {
                         const foundJSON = sampleTest.find((item) => {
-                          return item.assetPath === file.name
+                          return item.assetPath === assetPath
                         })
                         if (foundJSON !== undefined) {
                           setSampleTest((oldarray) =>
@@ -118,7 +118,7 @@ const AbEditor = ({
                         : 'text-gray-700 dark:text-gray-300'
                     }`}
                   >
-                    {file.name}
+                    {assetPath}
                   </span>
                 </label>
               )
@@ -143,7 +143,7 @@ const AbEditor = ({
                 questions: [
                   ...currentTest.questions,
                   {
-                    questionId: `q${currentTest.questions.length + 1}`,
+                    questionId: newQuestion,
                     text: newQuestion
                   }
                 ]
@@ -151,7 +151,7 @@ const AbEditor = ({
             } else {
               setCurrentTest({
                 ...currentTest,
-                questions: [{ questionId: 'q1', text: newQuestion }]
+                questions: [{ questionId: newQuestion, text: newQuestion }]
               })
             }
             setNewQuestion('')

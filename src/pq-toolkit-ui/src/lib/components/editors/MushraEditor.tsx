@@ -22,7 +22,7 @@ const MushraEditor = ({
       ABTest | ABXTest | FullABXTest | MUSHRATest | APETest | BaseTest
     >
   >
-  fileList: File[]
+  fileList: string[];
   setSetup: React.Dispatch<React.SetStateAction<ExperimentSetup>>
 }): JSX.Element => {
   const [sampleTest, setSampleTest] = useState<Sample[]>(currentTest.samples)
@@ -44,21 +44,21 @@ const MushraEditor = ({
               No Reference samples available. Please upload some samples.
             </h3>
           ) : (
-            fileList.map((file, index) => (
+            fileList.map((assetPath, index) => (
               <label
                 key={index}
                 className="flex items-center relative cursor-pointer mr-2"
               >
                 <input
                   type="radio"
-                  id={file.name}
-                  checked={referenceTest.assetPath === file.name}
+                  id={assetPath}
+                  checked={referenceTest.assetPath === assetPath}
                   name="reference"
                   onChange={(e) => {
                     if (e.target.checked) {
                       setReferenceTest({
                         sampleId: 'ref',
-                        assetPath: file.name
+                        assetPath: assetPath
                       })
                     } else {
                       setReferenceTest({ sampleId: '', assetPath: '' })
@@ -69,17 +69,17 @@ const MushraEditor = ({
                 <span className="w-4 h-4 flex items-center justify-center">
                   <span
                     className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      referenceTest.assetPath === file.name
+                      referenceTest.assetPath === assetPath
                         ? 'bg-pink-500 border-pink-500 dark:bg-pink-600 dark:border-pink-600'
                         : 'bg-gray-200 border-gray-400'
                     } transition-transform transform hover:scale-110 duration-100 ease-in-out`}
                   >
-                    {referenceTest.assetPath === file.name && (
+                    {referenceTest.assetPath === assetPath && (
                       <span className="w-2 h-2 rounded-full bg-white dark:bg-gray-100"></span>
                     )}
                   </span>
                 </span>
-                <span className="ml-2 break-words w-full">{file.name}</span>
+                <span className="ml-2 break-words w-full">{assetPath}</span>
               </label>
             ))
           )}
@@ -93,28 +93,28 @@ const MushraEditor = ({
               No Anchor samples available. Please upload some samples.
             </h3>
           ) : (
-            fileList.map((file, index) => (
+            fileList.map((assetPath, index) => (
               <label
                 key={index}
                 className="flex items-center relative cursor-pointer mr-2 break-words w-full"
               >
                 <input
                   type="checkbox"
-                  id={file.name}
+                  id={assetPath}
                   checked={anchorsTest.some(
-                    (sample) => sample.assetPath === file.name
+                    (sample) => sample.assetPath === assetPath
                   )}
-                  name={file.name}
+                  name={assetPath}
                   onChange={(e) => {
                     if (e.target.checked) {
                       setAnchorsTest((oldarray) => [
                         ...oldarray,
-                        { sampleId: 'a0', assetPath: file.name }
+                        { sampleId: assetPath, assetPath: assetPath }
                       ])
                     } else {
                       setAnchorsTest((oldarray) =>
                         oldarray.filter(
-                          (sample) => sample.assetPath !== file.name
+                          (sample) => sample.assetPath !== assetPath
                         )
                       )
                     }
@@ -125,14 +125,14 @@ const MushraEditor = ({
                   <span
                     className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
                       anchorsTest.some(
-                        (sample) => sample.assetPath === file.name
+                        (sample) => sample.assetPath === assetPath
                       )
                         ? 'bg-pink-500 border-pink-500 dark:bg-pink-600 dark:border-pink-600'
                         : 'bg-gray-200 border-gray-400'
                     } transition-transform transform hover:scale-110 duration-100 ease-in-out`}
                   >
                     {anchorsTest.some(
-                      (sample) => sample.assetPath === file.name
+                      (sample) => sample.assetPath === assetPath
                     ) && (
                       <svg
                         className="w-3 h-3 text-white"
@@ -151,7 +151,7 @@ const MushraEditor = ({
                     )}
                   </span>
                 </span>
-                <span className="ml-2 break-words w-full">{file.name}</span>
+                <span className="ml-2 break-words w-full">{assetPath}</span>
               </label>
             ))
           )}
@@ -165,28 +165,28 @@ const MushraEditor = ({
               No Samples available. Please upload some.
             </h3>
           ) : (
-            fileList.map((file, index) => (
+            fileList.map((assetPath, index) => (
               <label
                 key={index}
                 className="flex items-center relative cursor-pointer mr-2 break-words w-full"
               >
                 <input
                   type="checkbox"
-                  id={file.name}
+                  id={assetPath}
                   checked={sampleTest.some(
-                    (sample) => sample.assetPath === file.name
+                    (sample) => sample.assetPath === assetPath
                   )}
-                  name={file.name}
+                  name={assetPath}
                   onChange={(e) => {
                     if (e.target.checked) {
                       setSampleTest((oldarray) => [
                         ...oldarray,
-                        { sampleId: 's0', assetPath: file.name }
+                        { sampleId: assetPath, assetPath: assetPath }
                       ])
                     } else {
                       setSampleTest((oldarray) =>
                         oldarray.filter(
-                          (sample) => sample.assetPath !== file.name
+                          (sample) => sample.assetPath !== assetPath
                         )
                       )
                     }
@@ -197,14 +197,14 @@ const MushraEditor = ({
                   <span
                     className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
                       sampleTest.some(
-                        (sample) => sample.assetPath === file.name
+                        (sample) => sample.assetPath === assetPath
                       )
                         ? 'bg-pink-500 border-pink-500 dark:bg-pink-600 dark:border-pink-600'
                         : 'bg-gray-200 border-gray-400'
                     } transition-transform transform hover:scale-110 duration-100 ease-in-out`}
                   >
                     {sampleTest.some(
-                      (sample) => sample.assetPath === file.name
+                      (sample) => sample.assetPath === assetPath
                     ) && (
                       <svg
                         className="w-3 h-3 text-white"
@@ -223,7 +223,7 @@ const MushraEditor = ({
                     )}
                   </span>
                 </span>
-                <span className="ml-2 break-words w-full">{file.name}</span>
+                <span className="ml-2 break-words w-full">{assetPath}</span>
               </label>
             ))
           )}

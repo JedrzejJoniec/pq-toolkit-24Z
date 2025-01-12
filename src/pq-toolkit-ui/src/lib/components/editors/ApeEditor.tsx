@@ -24,7 +24,7 @@ const ApeEditor = ({
       ABTest | ABXTest | FullABXTest | MUSHRATest | APETest | BaseTest
     >
   >
-  fileList: File[]
+  fileList: string[]
   setSetup: React.Dispatch<React.SetStateAction<ExperimentSetup>>
 }): JSX.Element => {
   const [newQuestion, setNewQuestion] = useState('')
@@ -39,32 +39,32 @@ const ApeEditor = ({
               No Samples available. Please upload some.
             </h3>
           ) : (
-            fileList.map((file, index) => (
+            fileList.map((assetPath, index) => (
               <label
                 key={index}
                 className="flex items-center relative cursor-pointer mr-2 break-words w-full"
               >
                 <input
                   type="checkbox"
-                  id={file.name}
+                  id={assetPath}
                   checked={sampleTest.some(
-                    (sample) => sample.assetPath === file.name
+                    (sample) => sample.assetPath === assetPath
                   )}
-                  name={file.name}
+                  name={assetPath}
                   onChange={(e) => {
                     if (e.target.checked) {
                       setSampleTest((oldarray) => [
                         ...oldarray,
-                        { sampleId: 's0', assetPath: file.name }
+                        { sampleId: assetPath, assetPath: assetPath }
                       ])
                     } else {
                       const foundJSON = sampleTest.find(
-                        (item) => item.assetPath === file.name
+                        (item) => item.assetPath === assetPath
                       )
                       if (foundJSON !== undefined) {
                         setSampleTest((oldarray) =>
                           oldarray.filter(
-                            (sample) => sample.assetPath !== file.name
+                            (sample) => sample.assetPath !== assetPath
                           )
                         )
                       }
@@ -76,14 +76,14 @@ const ApeEditor = ({
                   <span
                     className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
                       sampleTest.some(
-                        (sample) => sample.assetPath === file.name
+                        (sample) => sample.assetPath === assetPath
                       )
                         ? 'bg-pink-500 border-pink-500 dark:bg-pink-600 dark:border-pink-600'
                         : 'bg-gray-200 border-gray-400'
                     } transition-transform transform hover:scale-110 duration-100 ease-in-out`}
                   >
                     {sampleTest.some(
-                      (sample) => sample.assetPath === file.name
+                      (sample) => sample.assetPath === assetPath
                     ) && (
                       <svg
                         className="w-3 h-3 text-white"
@@ -102,7 +102,7 @@ const ApeEditor = ({
                     )}
                   </span>
                 </span>
-                <span className="ml-2 break-words w-full">{file.name}</span>
+                <span className="ml-2 break-words w-full">{assetPath}</span>
               </label>
             ))
           )}
@@ -125,7 +125,7 @@ const ApeEditor = ({
                 axis: [
                   ...currentTest.axis,
                   {
-                    questionId: `q${currentTest.axis.length + 1}`,
+                    questionId: newQuestion,
                     text: newQuestion
                   }
                 ]
@@ -133,7 +133,7 @@ const ApeEditor = ({
             } else {
               setCurrentTest({
                 ...currentTest,
-                axis: [{ questionId: 'q1', text: newQuestion }]
+                axis: [{ questionId: newQuestion, text: newQuestion }]
               })
             }
             setNewQuestion('')

@@ -229,3 +229,49 @@ export const getSampleFetch = async <T>(
 
   return parsed
 }
+
+export const uploadSampleRateFetch = async (
+  sample: { sampleId: string, name: string; assetPath: string; rating: number | null }
+): Promise<void> => {
+  const response = await fetch('/api/v1/samples/rate', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(sample),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+};
+
+export const uploadSamplesFetch = async (
+  files: File[],
+  titles: string[]
+): Promise<void> => {
+  const formData = new FormData();
+
+  files.forEach((file, index) => {
+    formData.append('files', file);
+    formData.append('titles', titles[index]);
+  });
+
+  const response = await fetch('/api/v1/samples', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+};
+
+export const fetchSamples = async () => {
+    const response = await fetch('/api/v1/samples');
+    if (!response.ok) {
+        throw new Error(`Failed to fetch samples: ${response.statusText}`);
+    }
+    return response.json();
+};

@@ -181,7 +181,6 @@ class PqTestMUSHRAResult(PqTestBaseResult):
     reference_score: int = Field(alias="referenceScore")
     anchors_scores: list[PqTestMUSHRAScore] = Field(alias="anchorsScores")
     samples_scores: list[PqTestMUSHRAScore] = Field(alias="samplesScores")
-    experiment_use: str = Field(alias="experimentUse")
 
 class PqTestAPESampleRating(BaseModel):
     sample_id: str = Field(alias="sampleId")
@@ -267,3 +266,29 @@ class PqApiStatus(BaseModel):
 
 class PqExperimentName(BaseModel):
     name: str
+
+class PqSampleRating(BaseModel):
+    """
+    Class representing sound sample.
+
+    Attributes:
+        sample_id: An ID of the sample.
+        asset_path: Path to the sample.
+    """
+
+    sample_id: str = Field(
+        alias="sampleId", validation_alias=AliasChoices("sampleId", "sample_id")
+    )
+    name: str
+    asset_path: str = Field(
+        alias="assetPath", validation_alias=AliasChoices("assetPath", "asset_path")
+    )
+
+    rating: float
+
+class PqSampleRatingList(BaseModel):
+    samples: list[PqSampleRating]
+
+
+class PqSamplePaths(BaseModel):
+    asset_path: list[str]

@@ -13,7 +13,8 @@ import { adminExperimentsListSchema } from '../models'
 import Header from '@/lib/components/basic/header'
 import Blobs from '@/lib/components/basic/blobs'
 import { TbLogout2 } from 'react-icons/tb'
-import ExperimentResults from '@/lib/components/details/experimentResults' 
+import ExperimentResults from '@/lib/components/details/experimentResults'
+import ExperimentResultsChart from "@/lib/components/details/experimentResultsChart";
 
 const AdminPage = ({
   refreshAdminPage
@@ -72,7 +73,7 @@ const AdminPage = ({
             setExpandedExperiment={setExpandedExperiment}
           />
           {expandedExperiment && (
-            <ExperimentResults
+            <ExperimentResultsChart
               experimentName={expandedExperiment}
               closeDetails={() => setExpandedExperiment(null)}
             />
@@ -91,7 +92,7 @@ const AdminExperimentsListWidget = ({
   setExpandedExperiment: React.Dispatch<React.SetStateAction<string | null>>
 }): JSX.Element => {
   return (
-    <div className="flex flex-col self-start fadeInUpFast items-center z-10 w-full max-w-full 2xl:max-w-md text-black dark:text-white bg-gray-50 dark:bg-stone-800 rounded-3xl p-8 shadow-2xl relative">
+    <div className="flex flex-col items-center justify-center fadeInUpFast z-10 w-full max-w-full 2xl:max-w-md text-black dark:text-white bg-gray-50 dark:bg-stone-800 rounded-3xl p-8 shadow-2xl">
       <div className="flex text-lg md:text-xl font-semibold mb-4">
         Experiments:
       </div>
@@ -103,7 +104,7 @@ const AdminExperimentsListWidget = ({
           >
             <div
               className="font-semibold text-white w-full bg-blue-400 dark:bg-blue-500 hover:bg-pink-500 dark:hover:bg-pink-600 transform hover:scale-105 duration-300 ease-in-out p-2 rounded-md cursor-pointer"
-              onClick={() => setExpandedExperiment(name)} // Ustawiamy eksperyment
+              onClick={() => setExpandedExperiment(name)}
             >
               {name}
             </div>
@@ -113,6 +114,7 @@ const AdminExperimentsListWidget = ({
     </div>
   )
 }
+
 
 const LoginSwitch = (): JSX.Element => {
   const {

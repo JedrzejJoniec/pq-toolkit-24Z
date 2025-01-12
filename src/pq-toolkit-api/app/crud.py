@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from app.models import Experiment, Test, ExperimentTestResult, Admin
+from app.models import Experiment, Test, ExperimentTestResult, Admin, Sample, Rating
 from sqlmodel import Session, select
 from fastapi import UploadFile
 from fastapi.responses import StreamingResponse
@@ -17,9 +17,13 @@ from app.schemas import (
     PqTestBase,
     PqTestTypes,
     PqTestResultsList,
+    PqSampleRatingList,
+    PqSampleRating
 )
 from app.utils import PqException
 from pydantic import ValidationError
+from sqlalchemy.orm import subqueryload
+from sqlalchemy.sql import func
 
 
 class ExperimentNotFound(PqException):
@@ -134,7 +138,7 @@ def transform_test_upload(test: PqTestBase) -> Test:
 
 
 def upload_experiment_config(
-    session: Session, experiment_name: str, json_file: UploadFile
+        session: Session, experiment_name: str, json_file: UploadFile
 ):
     experiment_upload = PqExperiment.model_validate_json(json_file.file.read())
     experiment_db = get_db_experiment_by_name(session, experiment_name)
@@ -156,22 +160,22 @@ def upload_experiment_config(
 
 
 def get_experiment_sample(
-    manager: SampleManager, experiment_name: str, sample_name: str
+        manager: SampleManager, experiment_name: str, sample_name: str
 ) -> StreamingResponse:
     sample_generator = manager.get_sample(experiment_name, sample_name)
     return StreamingResponse(sample_generator, media_type="audio/mpeg")
 
 
 def upload_experiment_sample(
-    manager: SampleManager, experiment_name: str, audio_file: UploadFile
+        manager: SampleManager, experiment_name: str, audio_file: UploadFile
 ):
     sample_name = audio_file.filename
     sample_data = audio_file.file
-    manager.upload_sample(experiment_name, sample_name, sample_data)
+    return manager.upload_sample(experiment_name, sample_name, sample_data)
 
 
 def delete_experiment_sample(
-    manager: SampleManager, experiment_name: str, sample_name: str
+        manager: SampleManager, experiment_name: str, sample_name: str
 ):
     manager.remove_sample(experiment_name, sample_name)
 
@@ -189,7 +193,7 @@ def add_experiment_result(session: Session, experiment_name: str, result_list: d
 
 
 def add_test_results(
-    session: Session, results_data: dict, experiment: Experiment
+        session: Session, results_data: dict, experiment: Experiment
 ) -> str:
     results = results_data.get("results")
     if results is None:
@@ -214,7 +218,7 @@ def add_test_results(
 
 
 def transform_test_result(
-    result: ExperimentTestResult, test_type: PqTestTypes
+        result: ExperimentTestResult, test_type: PqTestTypes
 ) -> PqTestABResult | PqTestABXResult | PqTestMUSHRAResult | PqTestAPEResult:
     data = result.test_result.copy()
     data["experimentUse"] = result.experiment_use
@@ -244,7 +248,7 @@ def verify_test_result(result: dict, test_type: PqTestTypes):
 
 
 def get_experiment_tests_results(
-    session: Session, experiment_name, result_name=None
+        session: Session, experiment_name, result_name=None
 ) -> PqTestResultsList:
     experiment = get_db_experiment_by_name(session, experiment_name)
     results = []
@@ -263,3 +267,101 @@ def authenticate(session: Session, username: str, hashed_password: str) -> Admin
     except NoResultFound:
         return None
     return user if user.hashed_password == hashed_password else None
+
+
+def add_sample_rating(session: Session, sample: PqSampleRating):
+    sample_id = sample.sample_id
+    sample_name = sample.name
+    sample_rating = sample.rating
+
+    sample_record = session.exec(select(Sample).where(Sample.id == int(sample_id))).first()
+    if not sample_record:
+        raise ValueError(f"Sample '{sample_name}' not found")
+
+    new_rating = Rating(
+        sample_id=sample_record.id,
+        rating=sample_rating,
+    )
+    session.add(new_rating)
+
+
+    session.commit()
+
+    return PqSampleRating(
+        sampleId=str(sample_record.id),
+        name=sample_record.title,
+        assetPath=sample_record.file_path,
+        rating=sample_rating
+    )
+
+
+def upload_sample(
+        session: Session, manager: SampleManager, audio_file: UploadFile, title: str
+):
+    sample_name = audio_file.filename
+    sample_data = audio_file.file
+    upload_name = manager.upload_sample_directly(sample_name, sample_data)
+    new_sample = Sample(
+        title=title,
+        file_path=upload_name,
+    )
+    session.add(new_sample)
+    session.commit()
+
+
+def get_samples(session: Session):
+    samples = session.exec(
+        select(Sample).options(subqueryload(Sample.ratings))
+    ).all()
+
+    return PqSampleRatingList(samples=[
+        PqSampleRating(
+            sample_id=str(sample.id),
+            name=sample.title,
+            asset_path=sample.file_path,
+            rating=session.exec(
+                select(func.avg(Rating.rating)).where(Rating.sample_id == sample.id)
+            ).one_or_none() or 0
+        )
+        for sample in samples
+    ])
+
+
+def get_sample(
+        manager: SampleManager, sample_name: str
+) -> StreamingResponse:
+    sample_generator = manager.get_sample_directly(sample_name)
+    return StreamingResponse(sample_generator, media_type="audio/mpeg")
+
+def assign_sample_to_experiment(session: Session, manager: SampleManager, experiment_name: str, sample_id: int):
+    sample = session.query(Sample).filter(Sample.id == sample_id).first()
+    if not sample:
+        raise ValueError(f"Sample with id '{sample_id}' not found")
+    manager.copy_sample(sample.file_path,experiment_name, sample.file_path.split("/")[-1])
+    return sample.file_path.split("/")[-1]
+
+def create_sample(session: Session, file_path: str, title: str) -> Sample:
+    new_sample = Sample(
+        title=title,
+        file_path=file_path
+    )
+    session.add(new_sample)
+    session.commit()
+    session.refresh(new_sample)
+    return new_sample.file_path.split("/")[-1]
+
+
+def delete_sample(
+        manager: SampleManager, session: Session, sample_id: str
+):
+    sample = session.query(Sample).filter(Sample.id == int(sample_id)).first()
+
+    if not sample:
+        raise ValueError(f"Sample with id {sample_id} not found")
+
+    session.query(Rating).filter(Rating.sample_id == sample.id).delete()
+
+    manager.remove_sample_directly(sample.file_path)
+
+    session.delete(sample)
+    session.commit()
