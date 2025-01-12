@@ -1,12 +1,8 @@
-from fastapi import APIRouter, Request, Depends, UploadFile, HTTPException, Form
-from app.api.deps import SessionDep
+from fastapi import APIRouter, UploadFile, HTTPException, Form
 from app.schemas import PqSampleRating, PqSuccessResponse, PqSampleRatingList
 import app.crud as crud
-from app.api.deps import SessionDep, SampleManagerDep, CurrentAdmin
-import logging
+from app.api.deps import SessionDep, SampleManagerDep
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 

@@ -231,7 +231,7 @@ export const getSampleFetch = async <T>(
 }
 
 export const uploadSampleRateFetch = async (
-  sample: { sampleId: string, name: string; assetPath: string; rating: number }
+  sample: { sampleId: string, name: string; assetPath: string; rating: number | null }
 ): Promise<void> => {
   const response = await fetch('/api/v1/samples/rate', {
     method: 'PUT',

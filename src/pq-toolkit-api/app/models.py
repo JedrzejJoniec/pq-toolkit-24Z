@@ -5,7 +5,6 @@ from sqlalchemy import Column, JSON
 from sqlmodel import SQLModel, Field, Relationship
 
 from app.schemas import PqTestTypes
-from typing import List
 
 
 class Admin(SQLModel, table=True):

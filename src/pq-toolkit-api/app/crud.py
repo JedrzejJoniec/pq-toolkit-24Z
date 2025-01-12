@@ -17,7 +17,6 @@ from app.schemas import (
     PqTestBase,
     PqTestTypes,
     PqTestResultsList,
-    PqSample,
     PqSampleRatingList,
     PqSampleRating
 )

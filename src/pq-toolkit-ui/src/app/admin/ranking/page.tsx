@@ -3,7 +3,7 @@
 import Header from '@/lib/components/basic/header';
 import Blobs from '@/lib/components/basic/blobs';
 import useSWR, {type KeyedMutator} from 'swr';
-import { FaTrash } from 'react-icons/fa';
+import {FaTrash} from 'react-icons/fa';
 import AudioPlayer from '@/lib/components/player/audioplayer';
 import Loading from '../../loading';
 import {
@@ -27,7 +27,7 @@ const RankingPage = (): JSX.Element => {
     const [sortedSamples, setSortedSamples] = useState<SampleData[]>([]);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
     const [showUploadWidget, setShowUploadWidget] = useState(false);
-    const [uploadedSamples, setUploadedSamples] = useState<{ name: string; assetPath: string }[]>([]);
+    const [uploadedSamples, setUploadedSamples] = useState<{ name: string; assetPath: string; file?: File }[]>([]);
 
     useEffect(() => {
         if (apiData?.samples) {
@@ -68,7 +68,10 @@ const RankingPage = (): JSX.Element => {
 
     const handleSubmitFiles = async () => {
         try {
-            const files = uploadedSamples.map((sample) => sample.file);
+            const files = uploadedSamples
+                .map((sample) => sample.file)
+                .filter((file): file is File => file !== undefined);
+
             const titles = uploadedSamples.map((sample) => sample.name);
 
             await uploadSamplesFetch(files, titles);
@@ -166,7 +169,7 @@ const RankingPage = (): JSX.Element => {
         const newSortOrder = sortOrder === 'asc' ? 'desc' : sortOrder === 'desc' ? null : 'asc';
         setSortOrder(newSortOrder);
 
-        if (newSortOrder === null) {
+        if (newSortOrder === null && data?.samples) {
             setSortedSamples([...data.samples]);
         } else {
             const sorted = [...sortedSamples].sort((a, b) =>
@@ -255,7 +258,7 @@ const RankingPage = (): JSX.Element => {
                                     </button>
                                     {isLoggedIn && (
                                         <button
-                                            onClick={() => handleDeleteSample(sample.sampleId, sample.assetPath)}
+                                            onClick={() => handleDeleteSample(sample.sampleId)}
                                             className="text-red-500 hover:text-red-700 hover:scale-110 transition-all"
                                             aria-label="Delete sample"
                                         >

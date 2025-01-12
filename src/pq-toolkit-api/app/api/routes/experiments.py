@@ -1,5 +1,4 @@
 from fastapi import APIRouter, UploadFile, Request, Response, Form
-from fastapi.responses import JSONResponse
 from app.api.deps import SessionDep, SampleManagerDep, CurrentAdmin
 from app.schemas import (
     PqExperimentsList,
@@ -10,7 +9,7 @@ from app.schemas import (
 PqSamplePaths,
 )
 import app.crud as crud
-from typing import List, Optional
+from typing import List
 
 router = APIRouter()
 
