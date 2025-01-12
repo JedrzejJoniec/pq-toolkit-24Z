@@ -181,7 +181,6 @@ class PqTestMUSHRAResult(PqTestBaseResult):
     reference_score: int = Field(alias="referenceScore")
     anchors_scores: list[PqTestMUSHRAScore] = Field(alias="anchorsScores")
     samples_scores: list[PqTestMUSHRAScore] = Field(alias="samplesScores")
-    experiment_use: str = Field(alias="experimentUse")
 
 class PqTestAPESampleRating(BaseModel):
     sample_id: str = Field(alias="sampleId")

@@ -13,7 +13,7 @@ import { adminExperimentsListSchema } from '../models'
 import Header from '@/lib/components/basic/header'
 import Blobs from '@/lib/components/basic/blobs'
 import { TbLogout2 } from 'react-icons/tb'
-import ExperimentDetails from '@/lib/components/details/experimentDetails' // Importujemy komponent szczegółów
+import ExperimentDetails from '@/lib/components/details/experimentDetails'
 
 const AdminPage = ({
   refreshAdminPage
@@ -91,7 +91,9 @@ const AdminExperimentsListWidget = ({
   setExpandedExperiment: React.Dispatch<React.SetStateAction<string | null>>
 }): JSX.Element => {
   return (
-    <div className="flex flex-col self-start fadeInUpFast items-center z-10 w-full max-w-full 2xl:max-w-md text-black dark:text-white bg-gray-50 dark:bg-stone-800 rounded-3xl p-8 shadow-2xl relative">
+    <div
+      className="flex flex-col items-center justify-center fadeInUpFast z-10 w-full max-w-full 2xl:max-w-md text-black dark:text-white bg-gray-50 dark:bg-stone-800 rounded-3xl p-8 shadow-2xl"
+    >
       <div className="flex text-lg md:text-xl font-semibold mb-4">
         Experiments:
       </div>
@@ -111,8 +113,9 @@ const AdminExperimentsListWidget = ({
         ))}
       </ul>
     </div>
-  )
-}
+  );
+};
+
 
 const LoginSwitch = (): JSX.Element => {
   const {

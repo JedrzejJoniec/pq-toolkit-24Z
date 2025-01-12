@@ -98,9 +98,10 @@ const ExperimentResults = ({
                 <li key={index} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md shadow-md">
                   <div className="flex justify-between">
                     <span className="font-semibold">Test {result.testNumber}</span>
+                    <span className="text-sm text-gray-400">{result.type}</span>
                   </div>
                   <div className="mt-2">
-                    <strong>Sample ID:</strong> {result.xSampleId}<br />
+                  <strong>Sample ID:</strong> {result.xSampleId}<br />
                     <strong>Selected ID:</strong> {result.xSelected}
                   </div>
                   {result.selections && result.selections.length > 0 ? (

@@ -55,7 +55,7 @@ const ApeEditor = ({
                     if (e.target.checked) {
                       setSampleTest((oldarray) => [
                         ...oldarray,
-                        { sampleId: 's0', assetPath: assetPath }
+                        { sampleId: assetPath, assetPath: assetPath }
                       ])
                     } else {
                       const foundJSON = sampleTest.find(
@@ -125,7 +125,7 @@ const ApeEditor = ({
                 axis: [
                   ...currentTest.axis,
                   {
-                    questionId: `q${currentTest.axis.length + 1}`,
+                    questionId: newQuestion,
                     text: newQuestion
                   }
                 ]
@@ -133,7 +133,7 @@ const ApeEditor = ({
             } else {
               setCurrentTest({
                 ...currentTest,
-                axis: [{ questionId: 'q1', text: newQuestion }]
+                axis: [{ questionId: newQuestion, text: newQuestion }]
               })
             }
             setNewQuestion('')

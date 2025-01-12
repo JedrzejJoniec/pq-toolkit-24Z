@@ -106,7 +106,7 @@ const ExperimentDetails = ({
                       <h4 className="font-medium">Samples</h4>
                       <ul className="list-disc pl-5">
                         {test.samples.map((sample: { sampleId: string; assetPath: string }, idx: number) => (
-                          <li key={idx}>{sample.sampleId}</li> 
+                          <li key={idx}>{sample.assetPath}</li>
                         ))}
                       </ul>
                     </div>

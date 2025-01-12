@@ -109,7 +109,7 @@ const MushraEditor = ({
                     if (e.target.checked) {
                       setAnchorsTest((oldarray) => [
                         ...oldarray,
-                        { sampleId: 'a0', assetPath: assetPath }
+                        { sampleId: assetPath, assetPath: assetPath }
                       ])
                     } else {
                       setAnchorsTest((oldarray) =>
@@ -181,7 +181,7 @@ const MushraEditor = ({
                     if (e.target.checked) {
                       setSampleTest((oldarray) => [
                         ...oldarray,
-                        { sampleId: 's0', assetPath: assetPath }
+                        { sampleId: assetPath, assetPath: assetPath }
                       ])
                     } else {
                       setSampleTest((oldarray) =>

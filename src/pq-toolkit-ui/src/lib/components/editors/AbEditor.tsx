@@ -60,7 +60,7 @@ const AbEditor = ({
                         if (sampleTest.length < 2) {
                           setSampleTest((oldarray) => [
                             ...oldarray,
-                            { sampleId: 's0', assetPath: assetPath }
+                            { sampleId: assetPath, assetPath: assetPath }
                           ])
                         }
                       } else {
@@ -143,7 +143,7 @@ const AbEditor = ({
                 questions: [
                   ...currentTest.questions,
                   {
-                    questionId: `q${currentTest.questions.length + 1}`,
+                    questionId: newQuestion,
                     text: newQuestion
                   }
                 ]
@@ -151,7 +151,7 @@ const AbEditor = ({
             } else {
               setCurrentTest({
                 ...currentTest,
-                questions: [{ questionId: 'q1', text: newQuestion }]
+                questions: [{ questionId: newQuestion, text: newQuestion }]
               })
             }
             setNewQuestion('')
