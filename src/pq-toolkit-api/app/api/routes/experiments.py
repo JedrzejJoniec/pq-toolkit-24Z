@@ -1,5 +1,5 @@
 from fastapi import APIRouter, UploadFile, Request, Response, Form
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse
 import zipfile
 import os
 from app.api.deps import SessionDep, SampleManagerDep, CurrentAdmin
@@ -81,10 +81,10 @@ def upload_sample_v2(
 
     samples_paths = []
 
-    if files and titles:
-        for file, title in zip(files, titles):
+    if files:
+        for file in files:
             upload_path = crud.upload_experiment_sample(sample_manager, experiment_name, file)
-            samples_paths.append(crud.create_sample(session, upload_path, title))
+            samples_paths.append(crud.create_sample(session, upload_path, None))
 
     if sample_ids:
         for sample_id in sample_ids:

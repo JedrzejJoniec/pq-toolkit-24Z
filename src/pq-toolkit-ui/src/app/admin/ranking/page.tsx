@@ -76,7 +76,6 @@ const RankingPage = (): JSX.Element => {
 
             await uploadSamplesFetch(files, titles);
 
-            alert('Files uploaded successfully!');
             setUploadedSamples([]);
             await handleSendSamples();
         } catch (error) {
@@ -154,16 +153,18 @@ const RankingPage = (): JSX.Element => {
 
             await uploadSampleRateFetch(ratedSample);
 
-            alert(`You rated Sample "${ratedSample.name}" with ${ratedSample.rating} stars!`);
-
             setRatings((prevRatings) => ({
                 ...prevRatings,
                 [sampleIndex]: null,
             }));
+
+            const updatedSamples = await fetchSamples();
+            setSortedSamples(updatedSamples.samples);
         } catch (error) {
             console.error('Error submitting feedback:', error);
         }
     };
+
 
     const toggleSort = () => {
         const newSortOrder = sortOrder === 'asc' ? 'desc' : sortOrder === 'desc' ? null : 'asc';
@@ -225,7 +226,7 @@ const RankingPage = (): JSX.Element => {
                                 className="p-6 bg-white/80 dark:bg-black/50 backdrop-blur-lg rounded-lg shadow-lg flex flex-col space-y-4"
                             >
                                 <div className="text-lg font-semibold text-gray-900 dark:text-white break-words">
-                                    {sample.name}
+                                    {sample.assetPath.split('/').pop()}
                                 </div>
                                 <div className="flex items-center justify-between space-x-4">
                                     <div className="flex items-center space-x-1 w-1/4">
@@ -289,9 +290,9 @@ const RankingPage = (): JSX.Element => {
                                     key={idx}
                                     className="flex items-center justify-between bg-white/90 dark:bg-black/50 p-3 rounded-md shadow-sm"
                                 >
-                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {sample.name || `Sample ${idx + 1}`}
-                                    </span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {sample.name || `Sample ${idx + 1}`}
+                        </span>
                                     <audio controls className="w-1/2">
                                         <source src={sample.assetPath} type="audio/mpeg"/>
                                         Your browser does not support the audio element.
@@ -300,21 +301,15 @@ const RankingPage = (): JSX.Element => {
                             ))}
                             <div className="flex items-center space-x-4">
                                 <input
-                                    type="text"
-                                    placeholder="Sample Name"
-                                    className="w-1/2 p-2 border border-gray-300 rounded-md dark:bg-black/50 dark:text-white"
-                                    id="sampleName"
-                                />
-                                <input
                                     type="file"
                                     accept="audio/mpeg"
                                     onChange={(e) =>
                                         handleFileChange(
                                             e,
-                                            (document.getElementById('sampleName') as HTMLInputElement).value || ''
+                                            e.target.files?.[0]?.name || `Sample ${uploadedSamples.length + 1}`
                                         )
                                     }
-                                    className="p-2 border border-gray-300 rounded-md dark:bg-black/50 dark:text-white"
+                                    className="py-3 px-6 w-full bg-gray-100 dark:bg-black/50 text-black dark:text-white border border-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-black/50 shadow-sm transition-all cursor-pointer"
                                 />
                             </div>
                         </div>

@@ -16,7 +16,6 @@ interface SampleUploadWidgetProps {
     onSamplesSubmitted: (newSamples: { name: string; assetPath: string }[]) => void;
 }
 
-
 const SampleUploadWidget = ({experimentName, onClose, onSamplesSubmitted}: SampleUploadWidgetProps): JSX.Element => {
     const {data: apiData, error, isLoading} = useSWR('/api/v1/samples', fetchSamples);
     const [sortedSamples, setSortedSamples] = useState<SampleData[]>([]);
@@ -52,50 +51,46 @@ const SampleUploadWidget = ({experimentName, onClose, onSamplesSubmitted}: Sampl
         }
     };
 
-
     const handleSubmitSamples = async () => {
-    try {
-        const formData = new FormData();
+        try {
+            const formData = new FormData();
 
-        uploadedSamples.forEach((sample) => {
-            const file = sample.assetPath instanceof File ? sample.assetPath : new File([], sample.name);
-            formData.append('files', file);
-            formData.append('titles', sample.name);
-        });
+            uploadedSamples.forEach((sample) => {
+                const file = sample.assetPath instanceof File ? sample.assetPath : new File([], sample.name);
+                formData.append('files', file);
+                formData.append('titles', sample.name);
+            });
 
-        selectedSamples.forEach((id) => {
-            formData.append('sample_ids', id.toString());
-        });
+            selectedSamples.forEach((id) => {
+                formData.append('sample_ids', id.toString());
+            });
 
-        const response = await fetch(`/api/v1/experiments/${experimentName}/samples/v2`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: formData,
-        });
+            const response = await fetch(`/api/v1/experiments/${experimentName}/samples/v2`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: formData,
+            });
 
-        if (!response.ok) {
-            throw new Error(`Failed to submit samples: ${response.statusText}`);
+            if (!response.ok) {
+                throw new Error(`Failed to submit samples: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log('Samples submitted successfully:', result);
+
+            const newSamples = result.asset_path.map((path: string) => ({
+                name: path.split('/').pop() || path,
+                assetPath: path,
+            }));
+
+            onSamplesSubmitted(newSamples);
+            onClose();
+        } catch (error) {
+            console.error('Error submitting samples:', error);
         }
-
-        const result = await response.json();
-        console.log('Samples submitted successfully:', result);
-
-        const newSamples = result.asset_path.map((path: string) => ({
-            name: path.split('/').pop() || path,
-            assetPath: path,
-        }));
-
-        onSamplesSubmitted(newSamples);
-        onClose();
-    } catch (error) {
-        console.error('Error submitting samples:', error);
-    }
-};
-
-
-
+    };
 
     return (
         <div
@@ -118,7 +113,7 @@ const SampleUploadWidget = ({experimentName, onClose, onSamplesSubmitted}: Sampl
                                 className="flex items-center justify-between bg-white/90 dark:bg-black/50 p-3 rounded-md shadow-sm"
                             >
                                 <span className="text-sm font-medium text-gray-900 dark:text-white w-2/3">
-                                    {sample.name || `Sample ${idx + 1}`}
+                                    {sample.name} {/* Wyświetlamy nazwę pliku */}
                                 </span>
                                 <audio controls className="w-1/3">
                                     <source
@@ -127,26 +122,19 @@ const SampleUploadWidget = ({experimentName, onClose, onSamplesSubmitted}: Sampl
                                     />
                                     Your browser does not support the audio element.
                                 </audio>
-
                             </div>
                         ))}
-                        <div className="flex items-center space-x-2">
-                            <input
-                                type="text"
-                                placeholder="Sample name"
-                                className="w-[12ch] p-2 border border-gray-300 rounded-md dark:bg-black/50 dark:text-white"
-                                id="sampleName"
-                            />
+                        <div className="flex flex-col space-y-2">
                             <input
                                 type="file"
                                 accept="audio/mpeg"
-                                onChange={(e) =>
-                                    handleFileChange(
-                                        e,
-                                        (document.getElementById('sampleName') as HTMLInputElement).value || ''
-                                    )
-                                }
-                                className="p-2 border border-gray-300 rounded-md dark:bg-black/50 dark:text-white"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        handleFileChange(e, file.name); // Przekazujemy nazwę pliku do handleFileChange
+                                    }
+                                }}
+                                className="py-3 px-6 w-full border border-gray-300 rounded-md dark:bg-black/50 dark:text-white"
                             />
                         </div>
                     </div>
@@ -177,7 +165,7 @@ const SampleUploadWidget = ({experimentName, onClose, onSamplesSubmitted}: Sampl
                                 >
                                     <div className="flex flex-col">
                                     <span className="font-medium text-gray-900 dark:text-white">
-                                        {sample.name}
+                                        {sample.name.split('/').pop()}
                                     </span>
                                         <span className="text-sm text-gray-500 dark:text-gray-400">
                                         {sample.rating?.toFixed(1) || 'N/A'} ★

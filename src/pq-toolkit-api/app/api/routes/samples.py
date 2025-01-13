@@ -23,11 +23,9 @@ async def upload_samples(
         files: list[UploadFile],
         titles: list[str] = Form(...)
 ):
-    if len(files) != len(titles):
-        raise HTTPException(status_code=400, detail="Number of files and titles must match")
 
-    for file, title in zip(files, titles):
-        crud.upload_sample(session, sample_manager, file, title)
+    for file in files:
+        crud.upload_sample(session, sample_manager, file)
 
     return PqSuccessResponse(success=True)
 

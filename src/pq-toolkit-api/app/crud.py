@@ -313,13 +313,13 @@ def add_sample_rating(session: Session, sample: PqSampleRating):
 
 
 def upload_sample(
-        session: Session, manager: SampleManager, audio_file: UploadFile, title: str
+        session: Session, manager: SampleManager, audio_file: UploadFile
 ):
     sample_name = audio_file.filename
     sample_data = audio_file.file
     upload_name = manager.upload_sample_directly(sample_name, sample_data)
     new_sample = Sample(
-        title=title,
+        title=sample_name,
         file_path=upload_name,
     )
     session.add(new_sample)
@@ -358,6 +358,8 @@ def assign_sample_to_experiment(session: Session, manager: SampleManager, experi
     return sample.file_path.split("/")[-1]
 
 def create_sample(session: Session, file_path: str, title: str) -> Sample:
+    if not title:
+        title = file_path
     new_sample = Sample(
         title=title,
         file_path=file_path
