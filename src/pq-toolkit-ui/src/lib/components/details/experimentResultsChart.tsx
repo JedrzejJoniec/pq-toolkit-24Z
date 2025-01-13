@@ -173,29 +173,133 @@ const ExperimentResultsChart = ({
 
                     if (testType === 'ABX') {
                         const selections = parseSelections(testResults);
-                        const questionIds = Array.from(new Set(selections.map((s: any) => s.questionId)));
-                        const sampleIds = Array.from(
-                            new Set([
-                                ...selections.map((s: any) => s.sampleId),
-                                testResults[0]?.xSampleId,
-                                testResults[0]?.xSelected,
-                            ].filter(Boolean))
-                        );
 
-                        const isCorrect = testResults.every(
+                        const correctCount = testResults.filter(
                             (result: any) => result.xSampleId === result.xSelected
-                        );
+                        ).length;
+                        const incorrectCount = testResults.length - correctCount;
 
                         if (selections.length === 0) {
+                            // Wykres dla sytuacji bez selections
                             return (
                                 <div key={testNumber as React.Key} className="mb-8">
-                                    <h3 className="text-xl font-semibold mb-4">Test {testNumber} (ABX) - No
-                                        Selections</h3>
-                                    <p className="text-gray-500">
-                                        {isCorrect
-                                            ? 'Sample X was correctly identified.'
-                                            : 'Sample X was incorrectly identified.'}
-                                    </p>
+                                    <h3 className="text-xl font-semibold mb-4">Test {testNumber} (ABX) Chart</h3>
+                                    <Bar
+                                        data={{
+                                            labels: ['Correct', 'Incorrect'],
+                                            datasets: [
+                                                {
+                                                    label: 'Selections',
+                                                    data: [correctCount, incorrectCount],
+                                                    backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+                                                },
+                                            ],
+                                        }}
+                                        options={{
+                                            responsive: true,
+                                            plugins: {
+                                                legend: {display: false},
+                                                title: {
+                                                    display: true,
+                                                    text: `Correct vs Incorrect Selections (Test ${testNumber})`,
+                                                },
+                                            },
+                                            scales: {
+                                                x: {title: {display: true, text: 'Outcome'}},
+                                                y: {title: {display: true, text: 'Count'}},
+                                            },
+                                        }}
+                                    />
+                                    <div className="flex justify-center mt-4">
+                                        <button
+                                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                            onClick={() => downloadCSV(testNumber, testType)}
+                                        >
+                                            Download result
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        } else {
+                            // Wykresy dla sytuacji z selections
+                            const questionIds = Array.from(new Set(selections.map((s: any) => s.questionId)));
+                            const sampleIds = Array.from(new Set(selections.map((s: any) => s.sampleId)));
+
+                            // Dane do pierwszego wykresu (taki jak dla sytuacji bez selections)
+                            const firstChartData = {
+                                labels: ['Correct', 'Incorrect'],
+                                datasets: [
+                                    {
+                                        label: 'Selections',
+                                        data: [correctCount, incorrectCount],
+                                        backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+                                    },
+                                ],
+                            };
+
+                            // Dane do drugiego wykresu (liczba wyborów poszczególnych sampli dla każdego pytania)
+                            const sampleDatasets = sampleIds.map((sampleId) => {
+                                const data = questionIds.map((questionId) =>
+                                    selections.filter(
+                                        (s: any) => s.sampleId === sampleId && s.questionId === questionId
+                                    ).length
+                                );
+                                return {
+                                    label: sampleId,
+                                    data,
+                                    backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+                                        Math.random() * 255
+                                    )}, ${Math.floor(Math.random() * 255)}, 0.6)`,
+                                };
+                            });
+
+                            return (
+                                <div key={testNumber as React.Key} className="mb-8">
+                                    <h3 className="text-xl font-semibold mb-4">Test {testNumber} (ABX) Charts</h3>
+
+                                    {/* Pierwszy wykres */}
+                                    <Bar
+                                        data={firstChartData}
+                                        options={{
+                                            responsive: true,
+                                            plugins: {
+                                                legend: {display: false},
+                                                title: {
+                                                    display: true,
+                                                    text: `Correct vs Incorrect Selections (Test ${testNumber})`,
+                                                },
+                                            },
+                                            scales: {
+                                                x: {title: {display: true, text: 'Outcome'}},
+                                                y: {title: {display: true, text: 'Count'}},
+                                            },
+                                        }}
+                                    />
+
+                                    {/* Drugi wykres */}
+                                    <div className="mt-8">
+                                        <Bar
+                                            data={{
+                                                labels: questionIds,
+                                                datasets: sampleDatasets,
+                                            }}
+                                            options={{
+                                                responsive: true,
+                                                plugins: {
+                                                    legend: {position: 'top'},
+                                                    title: {
+                                                        display: true,
+                                                        text: `Sample Selections per Question (Test ${testNumber})`,
+                                                    },
+                                                },
+                                                scales: {
+                                                    x: {title: {display: true, text: 'Questions'}},
+                                                    y: {title: {display: true, text: 'Number of Selections'}},
+                                                },
+                                            }}
+                                        />
+                                    </div>
+
                                     <div className="flex justify-center mt-4">
                                         <button
                                             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
@@ -207,61 +311,8 @@ const ExperimentResultsChart = ({
                                 </div>
                             );
                         }
-
-                        const datasets = sampleIds.map((sampleId) => {
-                            const data = questionIds.map((questionId) =>
-                                selections.filter(
-                                    (s: any) => s.sampleId === sampleId && s.questionId === questionId
-                                ).length
-                            );
-                            return {
-                                label: sampleId,
-                                data,
-                                backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-                                    Math.random() * 255
-                                )}, ${Math.floor(Math.random() * 255)}, 0.6)`,
-                            };
-                        });
-
-                        return (
-                            <div key={testNumber as React.Key} className="mb-8">
-                                <h3 className="text-xl font-semibold mb-4">Test {testNumber} (ABX) Chart</h3>
-                                <p className={`mb-2 ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-                                    {isCorrect
-                                        ? 'Sample X was correctly identified.'
-                                        : 'Sample X was incorrectly identified.'}
-                                </p>
-                                <Bar
-                                    data={{
-                                        labels: questionIds,
-                                        datasets,
-                                    }}
-                                    options={{
-                                        responsive: true,
-                                        plugins: {
-                                            legend: {position: 'top'},
-                                            title: {
-                                                display: true,
-                                                text: `Selections per Question (Test ${testNumber})`,
-                                            },
-                                        },
-                                        scales: {
-                                            x: {title: {display: true, text: 'Questions'}},
-                                            y: {title: {display: true, text: 'Number of Selections'}},
-                                        },
-                                    }}
-                                />
-                                <div className="flex justify-center mt-4">
-                                    <button
-                                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                                        onClick={() => downloadCSV(testNumber, testType)}
-                                    >
-                                        Download result
-                                    </button>
-                                </div>
-                            </div>
-                        );
                     }
+
 
                     if (testType === 'MUSHRA') {
                         const anchorsScores = getSampleScores(testResults, 'anchorsScores');

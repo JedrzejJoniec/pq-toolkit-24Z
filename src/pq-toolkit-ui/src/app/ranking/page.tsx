@@ -9,13 +9,11 @@ import Loading from '../loading';
 import {
     userFetch,
     uploadSampleRateFetch,
-    uploadSamplesFetch,
-    fetchSamples
+    fetchSamples,
 } from '@/lib/utils/fetchers';
 import {validateApiData} from '@/core/apiHandlers/clientApiHandler';
 import {useState, useEffect} from 'react';
 import {SampleData, SamplesListSchema, UserData} from "@/lib/schemas/apiResults";
-
 
 const RankingPage = (): JSX.Element => {
     const {data: userData} = useSWR<UserData>('/api/v1/auth/user', userFetch);
@@ -27,7 +25,7 @@ const RankingPage = (): JSX.Element => {
     const [sortedSamples, setSortedSamples] = useState<SampleData[]>([]);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
     const [showUploadWidget, setShowUploadWidget] = useState(false);
-    const [uploadedSamples, setUploadedSamples] = useState<{ name: string; assetPath: string; file?: File }[]>([]);
+    const [uploadedSamples, setUploadedSamples] = useState<{ name: string; assetPath: File }[]>([]);
 
     useEffect(() => {
         if (apiData?.samples) {
@@ -36,7 +34,7 @@ const RankingPage = (): JSX.Element => {
     }, [apiData]);
 
     if (isLoading) {
-        return <Loading/>;
+        return <Loading />;
     }
 
     if (error) {
@@ -68,13 +66,23 @@ const RankingPage = (): JSX.Element => {
 
     const handleSubmitFiles = async () => {
         try {
-            const files = uploadedSamples
-                .map((sample) => sample.file)
-                .filter((file): file is File => file !== undefined);
+            const formData = new FormData();
+            uploadedSamples.forEach((sample) => {
+                formData.append('files', sample.assetPath);
+                formData.append('titles', sample.name);
+            });
 
-            const titles = uploadedSamples.map((sample) => sample.name);
+            const response = await fetch('/api/v1/samples', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: formData,
+            });
 
-            await uploadSamplesFetch(files, titles);
+            if (!response.ok) {
+                throw new Error('Failed to upload samples.');
+            }
 
             setUploadedSamples([]);
             await handleSendSamples();
@@ -83,6 +91,7 @@ const RankingPage = (): JSX.Element => {
             alert('Failed to upload files. Please try again later.');
         }
     };
+
     const handleDeleteSample = async (sampleId: string) => {
         try {
             const response = await fetch(`/api/v1/samples/${sampleId}`, {
@@ -98,23 +107,20 @@ const RankingPage = (): JSX.Element => {
             }
 
             setSortedSamples((prevSamples) => prevSamples.filter((sample) => sample.sampleId !== sampleId));
-
         } catch (error) {
             console.error('Error deleting sample:', error);
             alert('Failed to delete sample. Please try again.');
         }
     };
 
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files) {
             const newSamples = Array.from(files).map((file) => ({
                 name: file.name,
-                assetPath: URL.createObjectURL(file),
-                file,
+                assetPath: file,
             }));
-            setUploadedSamples((prev) => [...prev, ...newSamples]); // Dodanie nowych plików
+            setUploadedSamples((prev) => [...prev, ...newSamples]);
         }
     };
 
@@ -133,7 +139,6 @@ const RankingPage = (): JSX.Element => {
             alert('Failed to refresh the sample list. Please try again.');
         }
     };
-
 
     const handleRating = (sampleIndex: number, rating: number) => {
         setRatings((prevRatings) => ({
@@ -170,7 +175,6 @@ const RankingPage = (): JSX.Element => {
         }
     };
 
-
     const toggleSort = () => {
         const newSortOrder = sortOrder === 'asc' ? 'desc' : sortOrder === 'desc' ? null : 'asc';
         setSortOrder(newSortOrder);
@@ -193,19 +197,16 @@ const RankingPage = (): JSX.Element => {
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-stone-900 overflow-x-hidden relative">
-            <Blobs/>
-            <Header/>
-            <div
-                className="absolute -top-10 lg:-top-32 -right-6 max-w-full w-72 md:w-80 lg:w-96 h-72 md:h-80 lg:h-96 bg-none md:bg-gradient-to-r from-purple-500 to-violet-600 dark:from-purple-600 dark:to-violet-600 rounded-full mix-blend-multiply dark:mix-blend-color-dodge filter blur-xl opacity-60 dark:opacity-40 animate-blob animation-delay-8000 pointer-events-none"></div>
+            <Blobs />
+            <Header />
+            <div className="absolute -top-10 lg:-top-32 -right-6 max-w-full w-72 md:w-80 lg:w-96 h-72 md:h-80 lg:h-96 bg-none md:bg-gradient-to-r from-purple-500 to-violet-600 dark:from-purple-600 dark:to-violet-600 rounded-full mix-blend-multiply dark:mix-blend-color-dodge filter blur-xl opacity-60 dark:opacity-40 animate-blob animation-delay-8000 pointer-events-none"></div>
             <header className="py-12 text-center">
                 <h1 className="text-5xl font-bold text-gray-900 dark:text-white">Sound Samples Ranking</h1>
             </header>
             <main className="flex flex-col items-center">
                 <div className="w-full max-w-5xl px-6">
                     <div className="flex items-center justify-between mb-10 relative">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                            List of Sound Samples
-                        </h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">List of Sound Samples</h2>
                         <div className="flex space-x-4">
                             {isLoggedIn && (
                                 <button
@@ -235,12 +236,12 @@ const RankingPage = (): JSX.Element => {
                                 </div>
                                 <div className="flex items-center justify-between space-x-4">
                                     <div className="flex items-center space-x-1 w-1/4">
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {sample.rating?.toFixed(1) || 'N/A'}
-                    </span>
+                                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                                            {sample.rating?.toFixed(1) || 'N/A'}
+                                        </span>
                                         <span className="text-yellow-500 text-xl">★</span>
                                     </div>
-                                    <AudioPlayer assetPath={sample.assetPath}/>
+                                    <AudioPlayer assetPath={sample.assetPath} />
                                     <div className="flex space-x-4">
                                         {[1, 2, 3, 4, 5].map((rating) => (
                                             <button
@@ -268,7 +269,7 @@ const RankingPage = (): JSX.Element => {
                                             className="text-red-500 hover:text-red-700 hover:scale-110 transition-all"
                                             aria-label="Delete sample"
                                         >
-                                            <FaTrash className="w-6 h-6"/>
+                                            <FaTrash className="w-6 h-6" />
                                         </button>
                                     )}
                                 </div>
@@ -295,13 +296,14 @@ const RankingPage = (): JSX.Element => {
                                     key={idx}
                                     className="flex items-center justify-between bg-white/90 dark:bg-black/50 p-3 rounded-md shadow-sm"
                                 >
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {sample.name || `Sample ${idx + 1}`}
-            </span>
+                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {sample.name || `Sample ${idx + 1}`}
+                                    </span>
                                     <audio controls className="w-1/2">
                                         <source
-                                            src={typeof sample.assetPath === 'string' ? sample.assetPath : URL.createObjectURL(sample.assetPath)}
-                                            type="audio/mpeg"/>
+                                            src={URL.createObjectURL(sample.assetPath)}
+                                            type="audio/mpeg"
+                                        />
                                         Your browser does not support the audio element.
                                     </audio>
                                 </div>
@@ -311,16 +313,7 @@ const RankingPage = (): JSX.Element => {
                                     type="file"
                                     accept="audio/mpeg"
                                     multiple
-                                    onChange={(e) => {
-                                        const files = e.target.files;
-                                        if (files) {
-                                            const newSamples = Array.from(files).map((file) => ({
-                                                name: file.name,
-                                                assetPath: file,
-                                            }));
-                                            setUploadedSamples((prev) => [...prev, ...newSamples]);
-                                        }
-                                    }}
+                                    onChange={handleFileChange}
                                     className="py-3 px-6 w-full bg-gray-100 dark:bg-black/50 text-black dark:text-white border border-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-black/50 shadow-sm transition-all cursor-pointer"
                                 />
                             </div>
