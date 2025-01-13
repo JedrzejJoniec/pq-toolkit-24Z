@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import ThemeSwitch from '@/lib/components/basic/themeSwitch';
 import {TbLogout2} from 'react-icons/tb';
 import {HiMenu, HiChevronLeft} from 'react-icons/hi';
-import {FaRegFileAlt, FaTasks, FaHome, FaUser, FaPlus} from 'react-icons/fa';
+import {FaRegFileAlt, FaTasks, FaHome, FaUser, FaPlus, FaBook} from 'react-icons/fa';
 import {MdLeaderboard} from 'react-icons/md';
 import {userFetch} from '@/lib/utils/fetchers';
 
@@ -11,11 +11,9 @@ const Header = (props: any): JSX.Element => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Sprawdź, czy użytkownik jest zalogowany
     const {data: userData, error} = useSWR('/api/v1/auth/user', userFetch);
     const isLoggedIn = userData?.is_active ?? false;
 
-    // Zamknięcie menu po kliknięciu poza nim
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -153,6 +151,16 @@ const Header = (props: any): JSX.Element => {
                                                         }}
                                                     >
                                                         <MdLeaderboard className="mr-2"/> Sample ranking
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button
+                                                        className="flex items-center w-full text-left px-4 py-2 rounded-lg hover:bg-pink-500 dark:hover:bg-pink-600"
+                                                        onClick={() => {
+                                                            window.location.href = '/admin/guide';
+                                                        }}
+                                                    >
+                                                        <FaBook className="mr-2"/> Administrator guide
                                                     </button>
                                                 </li>
                                                 <li>
