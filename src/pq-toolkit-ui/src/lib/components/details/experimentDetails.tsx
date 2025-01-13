@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Loading from '../../../app/loading';
-import DeleteQuestionComp from '../form/deleteQuestionComp';
 
 const ExperimentDetails = ({
   experimentName,
@@ -74,11 +73,8 @@ const ExperimentDetails = ({
           <h3 className="text-xl font-semibold">Test List</h3>
           {details.tests && details.tests.length > 0 ? (
             <ul className="space-y-4">
-              {details.tests.map((test: any, index: number) => (
-                <li
-                  key={index}
-                  className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md shadow-md"
-                >
+              {details.tests.map((test: any, testIndex: number) => (
+                <li key={testIndex} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md shadow-md">
                   <div className="flex justify-between">
                     <span className="font-semibold">Test {test.testNumber}</span>
                     <span className="text-sm text-gray-400">{test.type}</span>
@@ -88,8 +84,8 @@ const ExperimentDetails = ({
                       <h4 className="font-medium">Samples</h4>
                       <ul className="list-disc pl-5">
                         {test.samples.map(
-                          (sample: { sampleId: string; assetPath: string }, idx: number) => (
-                            <li key={idx}>{sample.assetPath}</li>
+                          (sample: { sampleId: string; assetPath: string }, sampleIdx: number) => (
+                            <li key={sampleIdx}>{sample.assetPath}</li>
                           )
                         )}
                       </ul>
@@ -98,23 +94,11 @@ const ExperimentDetails = ({
                   {test.questions && test.questions.length > 0 && (
                     <div className="mt-2">
                       <h4 className="font-medium">Questions</h4>
-                      <ul className="list-disc pl-5">
+                      <ul className="list-disc pl-5 space-y-4">
                         {test.questions.map(
-                          (question: { questionId: string; text: string }, idx: number) => (
-                            <li key={idx} className="flex justify-between items-center">
-                              <span>{question.text}</span>
-                              <DeleteQuestionComp
-                                index={idx}
-                                currentTest={test}
-                                setCurrentTest={(updatedTest) => {
-                                  setDetails((prevDetails: any) => ({
-                                    ...prevDetails,
-                                    tests: prevDetails.tests.map((t: any, i: number) =>
-                                      i === index ? updatedTest : t
-                                    ),
-                                  }));
-                                }}
-                              />
+                          (question: { questionId: string; text: string }, questionIdx: number) => (
+                            <li key={questionIdx} className="mt-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                              {question.text}
                             </li>
                           )
                         )}
