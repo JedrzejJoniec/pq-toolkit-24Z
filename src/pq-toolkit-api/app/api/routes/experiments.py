@@ -1,4 +1,7 @@
 from fastapi import APIRouter, UploadFile, Request, Response, Form
+from fastapi.responses import StreamingResponse, FileResponse
+import zipfile
+import os
 from app.api.deps import SessionDep, SampleManagerDep, CurrentAdmin
 from app.schemas import (
     PqExperimentsList,
@@ -10,6 +13,7 @@ PqSamplePaths,
 )
 import app.crud as crud
 from typing import List
+from io import StringIO, BytesIO
 
 router = APIRouter()
 
@@ -94,17 +98,54 @@ async def get_sample(
 ):
     return crud.get_experiment_sample(sample_manager, experiment_name, filename)
 
-@router.get("/{experiment_name}/results_csv", response_class=Response)
-def download_results_csv(session: SessionDep, experiment_name: str):
+@router.get("/{experiment_name}/{test_number}/download_csv", response_class=Response)
+def download_results_csv(session: SessionDep, experiment_name: str, test_number: int):
+    experiment = crud.get_experiment_by_name(session, experiment_name)
     results = crud.get_experiment_tests_results(session, experiment_name)
 
-    # Convert results to CSV format
-    csv_content = "Test Name,Result,Comments\n"
-    csv_content += "\n".join(f"{r[0]},{r[1]}" for r in results)
-    for r in results:
-        print(r[1][0])
+    csv_data = crud.generate_csv_for_test(session, experiment, results, test_number)
 
-    return
+    output = StringIO()
+    output.write(csv_data)
+    output.seek(0)
+    response = StreamingResponse(
+        iter([output.getvalue()]),  # Zwracamy zawartość CSV jako strumień
+        media_type="text/csv",
+    )
+    response.headers["Content-Disposition"] = f"attachment; filename={experiment.name}_test_{test_number}_{results_dict['test_type']}.csv"
+    return response
+
+@router.get("/{experiment_name}/download_csv", response_class=Response)
+def download_results_csv_all(session: SessionDep, experiment_name: str):
+
+    experiment = crud.get_experiment_by_name(session, experiment_name)
+    results = crud.get_experiment_tests_results(session, experiment_name)
+
+    temp_dir = "temp_files"
+    os.makedirs(temp_dir, exist_ok=True)
+    csv_files = []
+    for test_it in range(len(experiment.tests)):
+        csv_file = os.path.join(temp_dir, f"{experiment.name}_test_{test_it+1}_{experiment.tests[test_it].type}.csv")
+        csv_files.append(csv_file)
+        csv_data = crud.generate_csv_for_test(session, experiment, results, test_it+1)
+        with open(csv_file, "w", newline="") as f:
+            f.write(csv_data)
+
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for csv_file in csv_files:
+            zip_file.write(csv_file, arcname=os.path.basename(csv_file))  # Dodanie pliku CSV do ZIP
+
+    # Ustawienie pozycji wskaźnika na początek pliku ZIP
+    zip_buffer.seek(0)
+
+    # Sprzątanie: usunięcie plików tymczasowych
+    for csv_file in csv_files:
+        os.remove(csv_file)
+    os.rmdir(temp_dir)
+
+    headers = {"Content-Disposition": f"attachment; filename={experiment.name}.zip"}
+    return StreamingResponse(zip_buffer, media_type="application/zip", headers=headers)
 
 
 @router.delete(

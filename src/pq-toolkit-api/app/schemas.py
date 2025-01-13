@@ -169,7 +169,7 @@ class PqTestABResult(PqTestBaseResult):
 class PqTestABXResult(PqTestBaseResult):
     x_sample_id: str = Field(alias="xSampleId")
     x_selected: str = Field(alias="xSelected")
-    selections: list[PqSelection] | list
+    selections: list[PqSelection] #| list
 
 
 class PqTestMUSHRAScore(BaseModel):

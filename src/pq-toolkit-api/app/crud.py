@@ -254,7 +254,6 @@ def get_experiment_tests_results(
     results = []
     for test in experiment.tests:
         for result in test.experiment_test_results:
-            print(f"experiment_use: {result.experiment_use}")
             if result_name is None or result.experiment_use == result_name:
                 results.append(transform_test_result(result, test.type))
     return PqTestResultsList(results=results)
@@ -365,3 +364,145 @@ def delete_sample(
 
     session.delete(sample)
     session.commit()
+
+
+def prepare_csv_result(session: Session, result_dict: dict):
+
+    match result_dict["test_type"]:
+        case "AB":
+            assert all(isinstance(result, PqTestABResult) for result in result_dict["results"]), \
+                "Not all results are instances of PqTestABResult"
+
+            # csv_content = 'Test type,questionId,sampleId\n'
+            # for result in result_dict["results"]:
+            #     for selection in result.selections:
+            #         csv_content += f"{result_dict['test_type']}," \
+            #                        f"{selection.question_id}," \
+            #                        f"{selection.sample_id}\n"
+            print(result_dict["results"])
+            all_questions = sorted({
+                selection.question_id
+                for result in result_dict["results"]
+                for selection in result.selections
+            })
+
+            # Budowanie nagłówka CSV
+            headers = ["Test name"] + [f"questionId_{i + 1},sampleId_{i + 1}" for i in range(len(all_questions))]
+            csv_content = ",".join(headers) + "\n"
+
+            # Budowanie wierszy CSV
+            for result in result_dict["results"]:
+                row = [result_dict["test_type"]]
+                question_to_sample = {sel.question_id: sel.sample_id for sel in result.selections}
+
+                # Uzupełnianie wartości `Null` dla brakujących `question_id`
+                for question in all_questions:
+                    sample = question_to_sample.get(question, "Null")
+                    row.extend([question, sample])
+
+                csv_content += ",".join(row) + "\n"
+
+            return csv_content
+
+        case "ABX":
+            # Sprawdzenie poprawności typu
+            assert all(isinstance(result, PqTestABXResult) for result in result_dict["results"]), \
+                "Not all results are instances of PqTestABXResult"
+            print(result_dict["results"])
+            # Zbiór wszystkich unikalnych `question_id` i ich kolejność
+            all_questions = sorted({
+                selection.question_id
+                for result in result_dict["results"]
+                for selection in result.selections
+            })
+
+            # Budowanie nagłówka CSV
+            headers = ["Test name", "xSampleId", "xSelected"] + [
+                f"questionId_{i + 1},sampleId_{i + 1}" for i in range(len(all_questions))
+            ]
+            csv_content = ",".join(headers) + "\n"
+
+            # Budowanie wierszy CSV
+            for result in result_dict["results"]:
+                row = [result_dict["test_type"], result.x_sample_id, result.x_selected]
+                question_to_sample = {sel.question_id: sel.sample_id for sel in result.selections}
+
+                # Uzupełnianie wartości: zawsze wpisujemy `question_id`, ale `sampleId` może być `Null`
+                for question in all_questions:
+                    sample = question_to_sample.get(question, "Null")
+                    row.extend([question, sample])
+
+                csv_content += ",".join(row) + "\n"
+
+            return csv_content
+
+
+        case "MUSHRA":
+            assert all(isinstance(result, PqTestMUSHRAResult) for result in result_dict["results"]), \
+                "Not all results are instances of PqTestMUSHRAResult"
+
+            all_anchors = sorted({
+                anchor.sample_id
+                for result in result_dict["results"]
+                for anchor in result.anchors_scores
+            })
+            all_samples = sorted({
+                sample.sample_id
+                for result in result_dict["results"]
+                for sample in result.samples_scores
+            })
+
+            headers = (["TestName", "ReferenceFile", "ReferenceScore"]
+                       + [f"AnchorSampleID_{i+1},AnchorScore_{i+1}"for i in range(len(all_anchors))]
+                       + [f"SampleId_{i+1},SampleScore_{i+1}" for i in range(len(all_samples))])
+            csv_content = ",".join(headers) + "\n"
+            for result in result_dict["results"]:
+                row = [result_dict["test_type"], result_dict["reference_file"], result.reference_score]
+                for anchor in result.anchors_scores:
+                    row.extend([anchor.sample_id, anchor.score])
+                for sample in result.samples_scores:
+                    row.extend([sample.sample_id, sample.score])
+                csv_content += ",".join(map(str, row)) + "\n"
+
+            return csv_content
+
+        case "APE":
+            assert all(isinstance(result, PqTestAPEResult) for result in result_dict["results"]), \
+            "Not all results are instances of PqTestAPEResult"
+
+            all_samples = sorted({
+                sample.sample_id
+                for result in result_dict["results"]
+                for axis in result.axis_results
+                for sample in axis.sample_ratings
+            })
+            headers = ["TestName", "AxisId"] + [f"SampleId_{i+1},SampleScore_{i+1}" for i in range(len(all_samples))]
+            csv_content = ",".join(headers) + "\n"
+            for result in result_dict["results"]:
+                for axis in result.axis_results:
+                    row = [result_dict["test_type"], axis.axis_id]
+                    for sample in axis.sample_ratings:
+                        row.extend([sample.sample_id, sample.rating])
+                    csv_content += ",".join(map(str, row)) + "\n"
+
+            return csv_content
+
+    return
+
+def generate_csv_for_test(session: Session, experiment, results, test_number: int):
+    results_dict = {
+        "test_type": experiment.tests[test_number - 1].type,
+        "results": []
+    }
+    if results_dict["test_type"] == "MUSHRA":
+        results_dict["reference_file"] = experiment.tests[test_number - 1].reference.asset_path
+    # Convert results to CSV format
+
+    for r in results:
+        result_dict = dict([r])
+        for k, v in result_dict.items():
+            for test_result in v:
+                if test_result.test_number == test_number:
+                    results_dict["results"].append(test_result)
+    csv_data = prepare_csv_result(session, results_dict)
+    return csv_data
