@@ -147,7 +147,7 @@ const Header = (props: any): JSX.Element => {
                                                     <button
                                                         className="flex items-center w-full text-left px-4 py-2 rounded-lg hover:bg-pink-500 dark:hover:bg-pink-600"
                                                         onClick={() => {
-                                                            window.location.href = '/admin/ranking';
+                                                            window.location.href = '/ranking';
                                                         }}
                                                     >
                                                         <MdLeaderboard className="mr-2"/> Sample ranking
@@ -201,7 +201,7 @@ const Header = (props: any): JSX.Element => {
                                                     <button
                                                         className="flex items-center w-full text-left px-4 py-2 rounded-lg hover:bg-pink-500 dark:hover:bg-pink-600"
                                                         onClick={() => {
-                                                            window.location.href = '/admin/ranking';
+                                                            window.location.href = '/ranking';
                                                         }}
                                                     >
                                                         <MdLeaderboard className="mr-2"/> Sample ranking
