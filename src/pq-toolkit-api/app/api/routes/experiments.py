@@ -112,7 +112,7 @@ def download_results_csv(session: SessionDep, experiment_name: str, test_number:
         iter([output.getvalue()]),  # Zwracamy zawartość CSV jako strumień
         media_type="text/csv",
     )
-    response.headers["Content-Disposition"] = f"attachment; filename={experiment.name}_test_{test_number}_{results_dict['test_type']}.csv"
+    response.headers["Content-Disposition"] = f"attachment; filename={experiment.name}_test_{test_number}_{results.results[0].type}.csv"
     return response
 
 @router.get("/{experiment_name}/download_csv", response_class=Response)

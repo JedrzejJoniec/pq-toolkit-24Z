@@ -161,7 +161,7 @@ const ExperimentResultsChart = ({
                     }
 
                     if (testType === 'ABX') {
-                        // Logika dla ABX
+                        // Logic for ABX
                         const selections = parseSelections(testResults);
                         const questionIds = Array.from(new Set(selections.map((s: any) => s.questionId)));
                         const sampleIds = Array.from(
@@ -171,6 +171,25 @@ const ExperimentResultsChart = ({
                                 testResults[0]?.xSelected,
                             ].filter(Boolean))
                         );
+
+                        const isCorrect = testResults.every(
+                            (result: any) => result.xSampleId === result.xSelected
+                        );
+
+                        if (selections.length === 0) {
+                            return (
+                                <div key={testNumber as React.Key} className="mb-8">
+                                    <h3 className="text-xl font-semibold mb-4">
+                                        Test {testNumber} (ABX) - No Selections
+                                    </h3>
+                                    <p className="text-gray-500">
+                                        {isCorrect
+                                            ? 'Sample X was correctly identified.'
+                                            : 'Sample X was incorrectly identified.'}
+                                    </p>
+                                </div>
+                            );
+                        }
 
                         const datasets = sampleIds.map((sampleId) => {
                             const data = questionIds.map((questionId) =>
@@ -192,6 +211,11 @@ const ExperimentResultsChart = ({
                                 <h3 className="text-xl font-semibold mb-4">
                                     Test {testNumber} (ABX) Chart
                                 </h3>
+                                <p className={`mb-2 ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
+                                    {isCorrect
+                                        ? 'Sample X was correctly identified.'
+                                        : 'Sample X was incorrectly identified.'}
+                                </p>
                                 <Bar
                                     data={{
                                         labels: questionIds,
@@ -203,7 +227,7 @@ const ExperimentResultsChart = ({
                                             legend: {position: 'top'},
                                             title: {
                                                 display: true,
-                                                text: `Selections per Question (Test ${testNumber})`
+                                                text: `Selections per Question (Test ${testNumber})`,
                                             },
                                         },
                                         scales: {
@@ -217,10 +241,10 @@ const ExperimentResultsChart = ({
                     }
 
                     if (testType === 'MUSHRA') {
-                        // Logic for MUSHRA
                         const anchorsScores = getSampleScores(testResults, 'anchorsScores');
                         const samplesScores = getSampleScores(testResults, 'samplesScores');
                         const averageScores = calculateAverageScores([...anchorsScores, ...samplesScores]);
+                        const referenceScore = testResults[0]?.referenceScore || 0;
 
                         return (
                             <div key={testNumber as React.Key} className="mb-8">
@@ -229,20 +253,38 @@ const ExperimentResultsChart = ({
                                 </h3>
                                 <Bar
                                     data={{
-                                        labels: averageScores.map((score) => score.sampleId),
+                                        labels: [
+                                            ...averageScores.map((score) => score.sampleId),
+                                            'Reference',
+                                        ],
                                         datasets: [
                                             {
-                                                label: 'Average Scores',
-                                                data: averageScores.map((score) => score.average),
-                                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                                data: [
+                                                    ...averageScores.map((score) => score.average),
+                                                    referenceScore,
+                                                ],
+                                                backgroundColor: [
+                                                    ...averageScores.map(
+                                                        () =>
+                                                            `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+                                                                Math.random() * 255
+                                                            )}, ${Math.floor(Math.random() * 255)}, 0.6)`
+                                                    ),
+                                                    'rgba(255, 99, 132, 0.6)', // Fixed color for reference score
+                                                ],
                                             },
                                         ],
                                     }}
                                     options={{
                                         responsive: true,
                                         plugins: {
-                                            legend: {position: 'top'},
-                                            title: {display: true, text: `Average Scores (Test ${testNumber})`},
+                                            legend: {
+                                                display: false, // Usunięcie legendy
+                                            },
+                                            title: {
+                                                display: true,
+                                                text: `Scores with Reference (Test ${testNumber})`,
+                                            },
                                         },
                                         scales: {
                                             x: {title: {display: true, text: 'Samples'}},
@@ -255,15 +297,13 @@ const ExperimentResultsChart = ({
                     }
 
                     if (testType === 'APE') {
-                        // Logic for APE
                         const axisResults = testResults.flatMap(
                             (result: {
                                 axisResults?: {
                                     axisId: string;
-                                    sampleRatings: { sampleId: string; rating: number }[]
-                                }[]
-                            }) =>
-                                result.axisResults || []
+                                    sampleRatings: { sampleId: string; rating: number }[];
+                                }[];
+                            }) => result.axisResults || []
                         );
                         const groupedByAxisId = axisResults.reduce((acc: any, axisResult: any) => {
                             if (!acc[axisResult.axisId]) {
@@ -285,18 +325,22 @@ const ExperimentResultsChart = ({
                                             labels: averageScores.map((score) => score.sampleId),
                                             datasets: [
                                                 {
-                                                    label: `Average Ratings for ${axisId}`,
                                                     data: averageScores.map((score) => score.average),
-                                                    backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-                                                        Math.random() * 255
-                                                    )}, ${Math.floor(Math.random() * 255)}, 0.6)`,
+                                                    backgroundColor: averageScores.map(
+                                                        () =>
+                                                            `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+                                                                Math.random() * 255
+                                                            )}, ${Math.floor(Math.random() * 255)}, 0.6)`
+                                                    ),
                                                 },
                                             ],
                                         }}
                                         options={{
                                             responsive: true,
                                             plugins: {
-                                                legend: {position: 'top'},
+                                                legend: {
+                                                    display: false, // Usunięcie legendy
+                                                },
                                                 title: {
                                                     display: true,
                                                     text: `Average Ratings for ${axisId} (Test ${testNumber})`,
