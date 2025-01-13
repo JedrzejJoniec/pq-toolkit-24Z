@@ -222,6 +222,7 @@ def transform_test_result(
 ) -> PqTestABResult | PqTestABXResult | PqTestMUSHRAResult | PqTestAPEResult:
     data = result.test_result.copy()
     data["experimentUse"] = result.experiment_use
+    data["type"] = test_type.value
 
     if test_type == PqTestTypes.AB:
         return PqTestABResult(**data)
@@ -258,6 +259,23 @@ def get_experiment_tests_results(
             if result_name is None or result.experiment_use == result_name:
                 results.append(transform_test_result(result, test.type))
     return PqTestResultsList(results=results)
+
+
+def modify_experiment_tests_results_for_chart(
+    session: Session, experiment_name: str
+) -> PqTestResultsList:
+    original_results = get_experiment_tests_results(session, experiment_name)
+
+    modified_results = [
+        result.copy(update={"type": test_type})
+        for result, test_type in zip(
+            original_results.results,
+            [test.type for test in get_db_experiment_by_name(session, experiment_name).tests],
+        )
+    ]
+
+    return PqTestResultsList(results=modified_results)
+
 
 
 def authenticate(session: Session, username: str, hashed_password: str) -> Admin | None:
