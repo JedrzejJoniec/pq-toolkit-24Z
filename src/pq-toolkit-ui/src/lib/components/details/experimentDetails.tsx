@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Loading from '../../../app/loading'; 
-import DeleteTestComp from '../form/deleteTestComp'; 
+import Loading from '../../../app/loading';
+import DeleteQuestionComp from '../form/deleteQuestionComp';
 
 const ExperimentDetails = ({
   experimentName,
-  closeDetails
+  closeDetails,
 }: {
   experimentName: string;
   closeDetails: () => void;
@@ -35,31 +35,10 @@ const ExperimentDetails = ({
     fetchExperimentDetails();
   }, [experimentName]);
 
-  // Funkcja do usuwania testu
-  const deleteTest = async (testId: string) => {
-    try {
-      // Wysyłanie zapytania do backendu, aby usunąć test (jeśli masz takie API)
-      const response = await fetch(`/api/v1/experiments/${experimentName}/tests/${testId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to delete test ${testId}`);
-      }
-      
-      // Usuwamy test z lokalnego stanu
-      setDetails((prevDetails: any) => ({
-        ...prevDetails,
-        tests: prevDetails.tests.filter((test: any) => test.testId !== testId),
-      }));
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center">
-        <Loading /> 
+        <Loading />
       </div>
     );
   }
@@ -84,19 +63,22 @@ const ExperimentDetails = ({
           Close
         </button>
       </div>
-      
+
       <div className="mt-6">
         <div className="mb-4">
           <h3 className="text-xl font-semibold">Description</h3>
           <p>{details.description || 'No description available'}</p>
         </div>
-        
+
         <div className="mb-4">
           <h3 className="text-xl font-semibold">Test List</h3>
           {details.tests && details.tests.length > 0 ? (
             <ul className="space-y-4">
               {details.tests.map((test: any, index: number) => (
-                <li key={index} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md shadow-md">
+                <li
+                  key={index}
+                  className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md shadow-md"
+                >
                   <div className="flex justify-between">
                     <span className="font-semibold">Test {test.testNumber}</span>
                     <span className="text-sm text-gray-400">{test.type}</span>
@@ -105,9 +87,11 @@ const ExperimentDetails = ({
                     <div className="mt-2">
                       <h4 className="font-medium">Samples</h4>
                       <ul className="list-disc pl-5">
-                        {test.samples.map((sample: { sampleId: string; assetPath: string }, idx: number) => (
-                          <li key={idx}>{sample.assetPath}</li>
-                        ))}
+                        {test.samples.map(
+                          (sample: { sampleId: string; assetPath: string }, idx: number) => (
+                            <li key={idx}>{sample.assetPath}</li>
+                          )
+                        )}
                       </ul>
                     </div>
                   )}
@@ -115,21 +99,28 @@ const ExperimentDetails = ({
                     <div className="mt-2">
                       <h4 className="font-medium">Questions</h4>
                       <ul className="list-disc pl-5">
-                        {test.questions.map((question: { questionId: string, text: string }, idx: number) => (
-                          <li key={idx}>{question.text}</li> 
-                        ))}
+                        {test.questions.map(
+                          (question: { questionId: string; text: string }, idx: number) => (
+                            <li key={idx} className="flex justify-between items-center">
+                              <span>{question.text}</span>
+                              <DeleteQuestionComp
+                                index={idx}
+                                currentTest={test}
+                                setCurrentTest={(updatedTest) => {
+                                  setDetails((prevDetails: any) => ({
+                                    ...prevDetails,
+                                    tests: prevDetails.tests.map((t: any, i: number) =>
+                                      i === index ? updatedTest : t
+                                    ),
+                                  }));
+                                }}
+                              />
+                            </li>
+                          )
+                        )}
                       </ul>
                     </div>
                   )}
-                  {/* Przycisk usuwania testu */}
-                  <div className="mt-4">
-                    <DeleteTestComp
-                      index={index} // Przekazanie indeksu testu
-                      experimentName={experimentName}
-                      setExperimentDetails={setDetails} // Funkcja do aktualizacji szczegółów eksperymentu
-                      experimentDetails={details} // Przekazanie całych szczegółów eksperymentu
-                    />
-                  </div>
                 </li>
               ))}
             </ul>
