@@ -5,7 +5,7 @@ import Blobs from '@/lib/components/basic/blobs';
 import useSWR, {type KeyedMutator} from 'swr';
 import {FaTrash} from 'react-icons/fa';
 import AudioPlayer from '@/lib/components/player/audioplayer';
-import Loading from '../../loading';
+import Loading from '../loading';
 import {
     userFetch,
     uploadSampleRateFetch,
@@ -106,10 +106,15 @@ const RankingPage = (): JSX.Element => {
     };
 
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setUploadedSamples((prev) => [...prev, {name, assetPath: URL.createObjectURL(file), file}]);
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files) {
+            const newSamples = Array.from(files).map((file) => ({
+                name: file.name,
+                assetPath: URL.createObjectURL(file),
+                file,
+            }));
+            setUploadedSamples((prev) => [...prev, ...newSamples]); // Dodanie nowych plików
         }
     };
 
@@ -290,11 +295,13 @@ const RankingPage = (): JSX.Element => {
                                     key={idx}
                                     className="flex items-center justify-between bg-white/90 dark:bg-black/50 p-3 rounded-md shadow-sm"
                                 >
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {sample.name || `Sample ${idx + 1}`}
-                        </span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {sample.name || `Sample ${idx + 1}`}
+            </span>
                                     <audio controls className="w-1/2">
-                                        <source src={sample.assetPath} type="audio/mpeg"/>
+                                        <source
+                                            src={typeof sample.assetPath === 'string' ? sample.assetPath : URL.createObjectURL(sample.assetPath)}
+                                            type="audio/mpeg"/>
                                         Your browser does not support the audio element.
                                     </audio>
                                 </div>
@@ -303,12 +310,17 @@ const RankingPage = (): JSX.Element => {
                                 <input
                                     type="file"
                                     accept="audio/mpeg"
-                                    onChange={(e) =>
-                                        handleFileChange(
-                                            e,
-                                            e.target.files?.[0]?.name || `Sample ${uploadedSamples.length + 1}`
-                                        )
-                                    }
+                                    multiple
+                                    onChange={(e) => {
+                                        const files = e.target.files;
+                                        if (files) {
+                                            const newSamples = Array.from(files).map((file) => ({
+                                                name: file.name,
+                                                assetPath: file,
+                                            }));
+                                            setUploadedSamples((prev) => [...prev, ...newSamples]);
+                                        }
+                                    }}
                                     className="py-3 px-6 w-full bg-gray-100 dark:bg-black/50 text-black dark:text-white border border-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-black/50 shadow-sm transition-all cursor-pointer"
                                 />
                             </div>
