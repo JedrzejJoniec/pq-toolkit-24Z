@@ -128,10 +128,15 @@ const SampleUploadWidget = ({experimentName, onClose, onSamplesSubmitted}: Sampl
                             <input
                                 type="file"
                                 accept="audio/mpeg"
+                                multiple
                                 onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                        handleFileChange(e, file.name); // Przekazujemy nazwę pliku do handleFileChange
+                                    const files = e.target.files;
+                                    if (files) {
+                                        const newSamples = Array.from(files).map((file) => ({
+                                            name: file.name,
+                                            assetPath: file,
+                                        }));
+                                        setUploadedSamples((prev) => [...prev, ...newSamples]);
                                     }
                                 }}
                                 className="py-3 px-6 w-full border border-gray-300 rounded-md dark:bg-black/50 dark:text-white"
