@@ -93,17 +93,22 @@ const ExperimentResultsChart = ({
         }));
     };
 
+    const downloadCSV = (testNumber: number, testType: string) => {
+        const link = document.createElement('a');
+        link.href = `/api/v1/experiments/${experimentName}/${testNumber}/download_csv?test_type=${testType}`;
+        link.setAttribute('download', `${experimentName}_test_${testNumber}_${testType}.csv`);
+        link.click();
+    };
+
     return (
         <div
             className="flex flex-col bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg p-6 shadow-lg w-full max-w-2xl mt-4">
-
             <div className="mt-3">
                 {Array.from(new Set(results.results.map((r: any) => r.testNumber))).map((testNumber) => {
                     const testResults = results.results.filter((r: any) => r.testNumber === testNumber);
                     const testType = testResults[0]?.type;
 
                     if (testType === 'AB') {
-                        // Logic for AB
                         const selections = parseSelections(testResults);
                         const questionIds = Array.from(new Set(selections.map((s: any) => s.questionId)));
                         const sampleIds = Array.from(new Set(selections.map((s: any) => s.sampleId)));
@@ -125,9 +130,7 @@ const ExperimentResultsChart = ({
 
                         return (
                             <div key={testNumber as React.Key} className="mb-8">
-                                <h3 className="text-xl font-semibold mb-4">
-                                    Test {testNumber} (AB) Chart
-                                </h3>
+                                <h3 className="text-xl font-semibold mb-4">Test {testNumber} (AB) Chart</h3>
                                 <Bar
                                     data={{
                                         labels: questionIds,
@@ -139,7 +142,7 @@ const ExperimentResultsChart = ({
                                             legend: {position: 'top'},
                                             title: {
                                                 display: true,
-                                                text: `Selections per Question (Test ${testNumber})`
+                                                text: `Selections per Question (Test ${testNumber})`,
                                             },
                                         },
                                         scales: {
@@ -156,12 +159,19 @@ const ExperimentResultsChart = ({
                                         },
                                     }}
                                 />
+                                <div className="flex justify-center mt-4">
+                                    <button
+                                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                        onClick={() => downloadCSV(testNumber, testType)}
+                                    >
+                                        Download result
+                                    </button>
+                                </div>
                             </div>
                         );
                     }
 
                     if (testType === 'ABX') {
-                        // Logic for ABX
                         const selections = parseSelections(testResults);
                         const questionIds = Array.from(new Set(selections.map((s: any) => s.questionId)));
                         const sampleIds = Array.from(
@@ -179,14 +189,21 @@ const ExperimentResultsChart = ({
                         if (selections.length === 0) {
                             return (
                                 <div key={testNumber as React.Key} className="mb-8">
-                                    <h3 className="text-xl font-semibold mb-4">
-                                        Test {testNumber} (ABX) - No Selections
-                                    </h3>
+                                    <h3 className="text-xl font-semibold mb-4">Test {testNumber} (ABX) - No
+                                        Selections</h3>
                                     <p className="text-gray-500">
                                         {isCorrect
                                             ? 'Sample X was correctly identified.'
                                             : 'Sample X was incorrectly identified.'}
                                     </p>
+                                    <div className="flex justify-center mt-4">
+                                        <button
+                                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                            onClick={() => downloadCSV(testNumber, testType)}
+                                        >
+                                            Download result
+                                        </button>
+                                    </div>
                                 </div>
                             );
                         }
@@ -208,9 +225,7 @@ const ExperimentResultsChart = ({
 
                         return (
                             <div key={testNumber as React.Key} className="mb-8">
-                                <h3 className="text-xl font-semibold mb-4">
-                                    Test {testNumber} (ABX) Chart
-                                </h3>
+                                <h3 className="text-xl font-semibold mb-4">Test {testNumber} (ABX) Chart</h3>
                                 <p className={`mb-2 ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
                                     {isCorrect
                                         ? 'Sample X was correctly identified.'
@@ -236,6 +251,14 @@ const ExperimentResultsChart = ({
                                         },
                                     }}
                                 />
+                                <div className="flex justify-center mt-4">
+                                    <button
+                                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                        onClick={() => downloadCSV(testNumber, testType)}
+                                    >
+                                        Download result
+                                    </button>
+                                </div>
                             </div>
                         );
                     }
@@ -248,9 +271,7 @@ const ExperimentResultsChart = ({
 
                         return (
                             <div key={testNumber as React.Key} className="mb-8">
-                                <h3 className="text-xl font-semibold mb-4">
-                                    Test {testNumber} (MUSHRA) Chart
-                                </h3>
+                                <h3 className="text-xl font-semibold mb-4">Test {testNumber} (MUSHRA) Chart</h3>
                                 <Bar
                                     data={{
                                         labels: [
@@ -279,7 +300,7 @@ const ExperimentResultsChart = ({
                                         responsive: true,
                                         plugins: {
                                             legend: {
-                                                display: false, // Usunięcie legendy
+                                                display: false, // Remove legend
                                             },
                                             title: {
                                                 display: true,
@@ -292,6 +313,14 @@ const ExperimentResultsChart = ({
                                         },
                                     }}
                                 />
+                                <div className="flex justify-center mt-4">
+                                    <button
+                                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                        onClick={() => downloadCSV(testNumber, testType)}
+                                    >
+                                        Download result
+                                    </button>
+                                </div>
                             </div>
                         );
                     }
@@ -313,12 +342,19 @@ const ExperimentResultsChart = ({
                             return acc;
                         }, {});
 
-                        return Object.entries(groupedByAxisId).map(([axisId, sampleRatings]) => {
+                        let isLastAPEChart = false; // Flaga, aby wykryć ostatni wykres APE
+                        const apeTestNumbers = results.results
+                            .filter((r: any) => r.type === 'APE')
+                            .map((r: any) => r.testNumber);
+
+                        return Object.entries(groupedByAxisId).map(([axisId, sampleRatings], index) => {
                             const averageScores = calculateAverageScoresAPE(sampleRatings as any[]);
+                            isLastAPEChart = index === Object.entries(groupedByAxisId).length - 1;
+
                             return (
                                 <div key={`${testNumber}-${axisId}`} className="mb-8">
                                     <h3 className="text-xl font-semibold mb-4">
-                                        Test {String(testNumber)} - {axisId} Chart
+                                        Test {String(testNumber)} (APE) - {axisId} Chart
                                     </h3>
                                     <Bar
                                         data={{
@@ -339,7 +375,7 @@ const ExperimentResultsChart = ({
                                             responsive: true,
                                             plugins: {
                                                 legend: {
-                                                    display: false, // Usunięcie legendy
+                                                    display: false, // Remove legend
                                                 },
                                                 title: {
                                                     display: true,
@@ -352,6 +388,16 @@ const ExperimentResultsChart = ({
                                             },
                                         }}
                                     />
+                                    {isLastAPEChart && (
+                                        <div className="flex justify-center mt-4">
+                                            <button
+                                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                                onClick={() => downloadCSV(testNumber, testType)}
+                                            >
+                                                Download result
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         });

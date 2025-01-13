@@ -99,7 +99,7 @@ async def get_sample(
     return crud.get_experiment_sample(sample_manager, experiment_name, filename)
 
 @router.get("/{experiment_name}/{test_number}/download_csv", response_class=Response)
-def download_results_csv(session: SessionDep, experiment_name: str, test_number: int):
+def download_results_csv(session: SessionDep, experiment_name: str, test_number: int, test_type: str):
     experiment = crud.get_experiment_by_name(session, experiment_name)
     results = crud.get_experiment_tests_results(session, experiment_name)
 
@@ -112,7 +112,7 @@ def download_results_csv(session: SessionDep, experiment_name: str, test_number:
         iter([output.getvalue()]),  # Zwracamy zawartość CSV jako strumień
         media_type="text/csv",
     )
-    response.headers["Content-Disposition"] = f"attachment; filename={experiment.name}_test_{test_number}_{results.results[0].type}.csv"
+    response.headers["Content-Disposition"] = f"attachment; filename={experiment.name}_test_{test_number}_{test_type}.csv"
     return response
 
 @router.get("/{experiment_name}/download_csv", response_class=Response)
