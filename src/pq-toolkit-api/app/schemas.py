@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, AliasChoices, ConfigDict, field_validator
 from enum import Enum
 import inspect
 import uuid
+from typing import Optional
 
 
 class AccessToken(BaseModel):
@@ -151,6 +152,7 @@ class PqTestBaseResult(BaseModel):
     test_number: int = Field(
         alias="testNumber", validation_alias=AliasChoices("testNumber", "test_number")
     )
+    type: Optional[str] = None
 
 
 class PqSelection(BaseModel):
